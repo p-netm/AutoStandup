@@ -1,0 +1,15 @@
+{
+  "name": "auto_standup",
+  "version": "1.0.0",
+  "description": "A slackbot that manages standups",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Kahama",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "slackbots": "^1.2.0"
+  }
+}
