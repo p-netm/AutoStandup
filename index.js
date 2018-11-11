@@ -2,6 +2,7 @@ const express = require("express")
 const bodyParser = require('body-parser')
 const cors = require("cors")
 const SlashCommandRouter = require("./api_routes/slash-command-route.js")
+const listeningPort = "port"
 
 // Initialize app and attach middleware
 const app = express()
@@ -19,9 +20,8 @@ app.use(function (err, req, res, next) {
 
 
 
-// Listen to port
-let port_used = process.env.port 
-app.listen(port_used, function () {
-    console.log('[+] app listening to requests on port ' + port_used)
+app.set(listeningPort, (process.env.PORT || 7777));
+app.listen(app.get(listeningPort), function () {
+    console.log('[+] app listening to requests on port ' + app.get(listeningPort))
 })
 
