@@ -3,9 +3,10 @@ const SlashCommandRouter = express.Router()
 
 //Handle post request from slack
 SlashCommandRouter.post('/slashcmd/new', function (req, res, next) {
-        var sejson = "{elly:{age:23,sex:'male',profession:'Sofware engineer'}}"
-        res.send(sejson)
-        console.log(req.body)
+    console.log(req.body)
+    var responseData = "{}"
+    res.statusCode = 200
+    res.send(responseData)
 })
 
 //Test get request from slack

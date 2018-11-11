@@ -7,20 +7,5 @@ const bot = new SlackBot({
     name: 'autostandup',
 });
 
-// Start Handler
-bot.on('start', function () {
-    const params = {
-        icon: 'autostandup'
-    }
 
-    bot.on('error', (err) => console.log(err));
-
-    //message handler
-    bot.on('message', data => {
-        if (data.type !== 'message') {
-            return
-        }
-        console.log(data);
-    })
-
-});
+module.exports = bot
