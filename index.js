@@ -9,7 +9,7 @@ const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use('/autostandup/api', SlashCommandRouter)
+app.use('/api/v1', SlashCommandRouter)
 
 // Error handling middleware
 app.use(function (err, req, res, next) {
@@ -20,7 +20,7 @@ app.use(function (err, req, res, next) {
 
 
 // Listen to port
-let port_used = process.env.port != undefined ? process.env.port : 4000
+let port_used = process.env.port 
 app.listen(port_used, function () {
     console.log('[+] app listening to requests on port ' + port_used)
 })
