@@ -1,31 +1,27 @@
-const SlackBot = require('slackbots');
-const axios = require('axios');
+const express = require("express")
+const bodyParser = require('body-parser')
+const cors = require("cors")
+const SlashCommandRouter = require("./api_routes/slash-command-route.js")
+
+// Initialize app and attach middleware
+const app = express()
+
+app.use(cors())
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use('/autostandup/api', SlashCommandRouter)
+
+// Error handling middleware
+app.use(function (err, req, res, next) {
+    res.status(422).send({ error: err.message })
+    console.log("Error description: " + err)
+})
 
 
-const bot = new SlackBot({
-    token: 'xoxb-475049069953-477590829175-N4HH7PICuYfbPEYri0kKTm9R',
-    name: 'auto_standup',
-});
 
-// Start Handler
-bot.on('start', function () {
-    const params = {
-        icon: 'autostandup'
-    }
+// Listen to port
+let port_used = process.env.port != undefined ? process.env.port : 4000
+app.listen(port_used, function () {
+    console.log('[+] app listening to requests on port ' + port_used)
+})
 
-    bot.postMessageToChannel(
-        'standups', 
-        'post what you are working on today',
-         params
-    );
-    bot.on('error', (err) => console.log(err));
-
-    //message handler
-    bot.on('message', data => {
-        if (data.type !== 'message'){
-            return
-        }
-        console.log(data);
-    })
-
-});
