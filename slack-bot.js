@@ -7,5 +7,12 @@ const bot = new SlackBot({
     name: 'autostandup',
 });
 
+function getUsers() {
+    return '"{"opensrp:["kahama","kitoto"]}"}"'
+}
+function prompStandup() {
+    getUsers()
+    
+}
 
 module.exports = bot
