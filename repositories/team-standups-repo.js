@@ -7,7 +7,7 @@ class TeamStandup{
         CREATE TABLE IF NOT EXISTS team_standups(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             team_id INTEGER NOT NULL,
-            date_posted TEXT  DEFAULT DATETIME('now','localtime'),
+            date_posted TEXT NOT NULL,
             standup TEXT NOT NULL,
             CONSTRAINT ts_fk_team_id FOREIGN KEY (team_id) REFERENCES teams(id)
             ON UPDATE CASCADE ON DELETE CASCADE

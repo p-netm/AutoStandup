@@ -7,7 +7,7 @@ class UserStandup{
         CREATE TABLE IF NOT EXISTS user_standups(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
-            date_posted TEXT  DEFAULT DATETIME('now','localtime'),
+            date_posted TEXT  NOT NULL,
             standup TEXT NOT NULL,
             CONSTRAINT us_fk_user_id FOREIGN KEY (user_id) REFERENCES users(id)
             ON UPDATE CASCADE ON DELETE CASCADE
