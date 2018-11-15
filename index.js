@@ -22,7 +22,7 @@ app.use(function (err, req, res, next) {
 
 
 const autoStandup = new AutoStandup()
-2
+
 ontime({
     log:true,
     cycle: ['11:00:00', '15:10:00'],
