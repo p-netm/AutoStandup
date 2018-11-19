@@ -4,7 +4,7 @@ const TeamRepository = require("./repositories/teams-repo")
 const TeamStandupsRepository = require("./repositories/team-standups-repo")
 const UserStandupsRepository = require("./repositories/user-standups-repo")
 
-const dao = new AppDao("./db.sqlite3")
+const dao = new AppDao("../db.sqlite3")
 const userRepo = new UserRepository(dao)
 const teamRepo = new TeamRepository(dao)
 const teamStandupRepo = new TeamStandupsRepository(dao)

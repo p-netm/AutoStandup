@@ -4,20 +4,26 @@
   "description": "A slackbot that manages standups",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "DEBUG=AutoStandup node src/index.js"
   },
-  "author": "Kahama",
+  "authors": [ 
+    "Pharis Kahama <pkahama@ona.io>",
+    "Elly Kitoto <ekitoto@ona.io>"
+  ],
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
     "bluebird": "^3.5.3",
     "body-parser": "^1.17.1",
     "cors": "^2.8.3",
+    "debug": "^3.2.6",
+    "dotenv": "^6.1.0",
     "express": "^4.16.4",
     "moment": "^2.22.2",
     "ontime": "0.0.6",
     "promise": "^7.1.1",
     "slackbots": "^1.2.0",
-    "sqlite3": "^4.0.4"
+    "sqlite3": "^4.0.4",
+    "tsscmp": "^1.0.6"
   }
 }

@@ -1,13 +1,22 @@
+const dotenv = require("dotenv")
 const Slackbot = require('slackbots');
 const AppBootstrap = require("./main")
 const channelName = "standups"
 
+
 const params = {
-    icon: 'autostandup'
+    icon: process.env.APP_NAME
 }
+//Configure environmental variables 
+const result = dotenv.config()
+
+if (result.error) {
+    throw result.error
+}
+
 const bot = new Slackbot({
-    token: 'xoxb-475049069953-477590829175-N4HH7PICuYfbPEYri0kKTm9R',
-    name: 'autostandup',
+    token: process.env.SLACK_ACCESS_TOKEN,
+    name: process.env.APP_NAME,
 });
 
 class AutoStandup {
