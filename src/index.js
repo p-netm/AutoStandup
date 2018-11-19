@@ -5,7 +5,6 @@ const cors = require("cors")
 const SlashCommandRouter = require("./api_routes/slash-command-route.js")
 const DialogRouter = require("./api_routes/dialog-route.js")
 const AutoStandup = require("./slack-bot")
-const listeningPort = "port"
 const ontime = require("ontime")
 const debug = require("debug")("AutoStandup:index")
 
@@ -56,7 +55,6 @@ ontime({
 })
 
 //Start listening to requests
-app.set(listeningPort, (process.env.PORT || 7777));
-app.listen(app.get(listeningPort), function () {
-    console.log("[+] app listening to requests on port " + app.get(listeningPort))
+app.listen(process.env.PORT || 7777, function () {
+    console.log("[+] app listening for requests")
 })
