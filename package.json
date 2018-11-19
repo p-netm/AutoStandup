@@ -11,6 +11,9 @@
     "Elly Kitoto <ekitoto@ona.io>"
   ],
   "license": "ISC",
+  "engines": { 
+    "node": "8.12.0" 
+   },
   "dependencies": {
     "axios": "^0.18.0",
     "bluebird": "^3.5.3",
