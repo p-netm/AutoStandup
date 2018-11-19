@@ -5,9 +5,9 @@ const SlashCommandRouter = express.Router()
 SlashCommandRouter.post('/slashcmd/new', function (req, res, next) {
     console.log(req.body)
     
-    var responseData = '{"text":"Got it! Thank you."}'
+    var responseData = {"text":"Got it! Thank you."}
     res.statusCode = 200
-    res.send(responseData)
+    res.json(responseData)
 })
 
 //Test get request from slack

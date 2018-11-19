@@ -5,7 +5,7 @@ const DialogRouter = express.Router()
 DialogRouter.post('/dialog/new', function (req, res, next) {
     
     res.statusCode = 200
-    res.send("{}")
+    res.json({})
 })
 
 //Test get request from slack
