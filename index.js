@@ -2,6 +2,7 @@ const express = require("express")
 const bodyParser = require("body-parser")
 const cors = require("cors")
 const SlashCommandRouter = require("./api_routes/slash-command-route.js")
+const DialogRouter = require("./api_routes/dialog-route.js")
 const AutoStandup = require("./slack-bot")
 const listeningPort = "port"
 const ontime = require("ontime")
@@ -13,6 +14,7 @@ app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use("/api/v1", SlashCommandRouter)
+app.use("/api/v1", DialogRouter)
 
 // Error handling middleware
 app.use(function (err, req, res, next) {
