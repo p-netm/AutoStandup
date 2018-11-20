@@ -66,7 +66,7 @@ SlashCommandRouter.post('/slashcmd/new', function (req, res) {
         axios.post(`${SLACK_API_URL}/dialog.open`, qs.stringify(dialog))
             .then((result) => {
                 debug('dialog.open: %o', result.data);
-                var responseData = JSON.stringify({ text: "Got it! Thank you." })
+                var responseData = { "text": "Got it! Thank you." }
                 res.status(200).json(responseData)
             }).catch((err) => {
                 debug('dialog.open call failed: %o', err);
