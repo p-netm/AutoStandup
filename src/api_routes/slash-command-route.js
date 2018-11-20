@@ -1,3 +1,11 @@
+if (process.env.NODE_ENV !== 'production') {
+    const dotenv = require('dotenv')//Configure environmental variables 
+    const result = dotenv.config()
+
+    if (result.error) {
+        throw result.error
+    }
+}
 const express = require("express")
 const axios = require("axios")
 const qs = require("querystring")

@@ -1,6 +1,5 @@
 const crypto = require('crypto');
 const timingSafeCompare = require('tsscmp');
-const moment = require("moment")
 
 const isVerified = (req) => {
   const signature = req.headers['x-slack-signature'];
@@ -9,7 +8,7 @@ const isVerified = (req) => {
   const [version, hash] = signature.split('=');
 
   // Check if the timestamp is too old
-  const fiveMinutesAgo = moment().subtract(5, "minutes").fromNow();
+  const fiveMinutesAgo = ~~(Date.now() / 1000) - (60 * 5);
   if (timestamp < fiveMinutesAgo) return false;
 
   hmac.update(`${version}:${timestamp}:${req.rawBody}`);
