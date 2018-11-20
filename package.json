@@ -4,7 +4,7 @@
   "description": "A slackbot that manages standups",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "DEBUG=onaautostandup node src/index.js"
   },
   "authors": [ 
     "Pharis Kahama <pkahama@ona.io>",

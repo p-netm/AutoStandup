@@ -2,7 +2,7 @@ const express = require("express")
 const axios = require("axios")
 const qs = require("querystring")
 const SlashCommandRouter = express.Router()
-const debug = require("debug")("AutoStandup:slash-command-route")
+const debug = require("debug")("onaautostandup:slash-command-route")
 const SLACK_API_URL = 'https://slack.com/api';
 const signature = require("../verifySignature")
 

@@ -6,7 +6,7 @@ const SlashCommandRouter = require("./api_routes/slash-command-route.js")
 const DialogRouter = require("./api_routes/dialog-route.js")
 const AutoStandup = require("./slack-bot")
 const ontime = require("ontime")
-const debug = require("debug")("AutoStandup:index")
+const debug = require("debug")("onaautostandup:index")
 
 //Configure environmental variables 
 const result = dotenv.config()
