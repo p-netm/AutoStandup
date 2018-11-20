@@ -28,46 +28,42 @@ SlashCommandRouter.post('/slashcmd/new', function (req, res) {
             token: process.env.SLACK_ACCESS_TOKEN,
             trigger_id,
             dialog: JSON.stringify({
-                title: 'Submit daily standup',
+                title: 'Submit a helpdesk ticket',
                 callback_id: 'submit-ticket',
                 submit_label: 'Submit',
                 elements: [
-                    {
-                        label: 'Date',
-                        type: 'text',
-                        name: 'standupdate',
-                        value: text,
-                        hint: 'date you are posting the standup',
-                    },                    
-                    {
-                        label: 'Team',
-                        type: 'select',
-                        name: 'team',
-                        options: [
-                            { label: 'OpenSrp', value: 'opensrp' },
-                            { label: 'Gisida', value: 'gisida' },
-                            { label: 'Kaznet', value: 'kaznet' },
-                            { label: 'Zebra', value: 'zebra' },
-                            { label: 'Canopy', value: 'canopy' },
-                            { label: 'Ona Data', value: 'onadata' }
-                        ],
-                    },
-                    {
-                        label: 'Stand-up Updates',
-                        type: 'textarea',
-                        name: 'standupt',
-                        optional: true,
-                    }
+                  {
+                    label: 'Title',
+                    type: 'text',
+                    name: 'title',
+                    value: text,
+                    hint: '30 second summary of the problem',
+                  },
+                  {
+                    label: 'Description',
+                    type: 'textarea',
+                    name: 'description',
+                    optional: true,
+                  },
+                  {
+                    label: 'Urgency',
+                    type: 'select',
+                    name: 'urgency',
+                    options: [
+                      { label: 'Low', value: 'Low' },
+                      { label: 'Medium', value: 'Medium' },
+                      { label: 'High', value: 'High' },
+                    ],
+                  },
                 ],
-            }),
+              }),
         };
 
         // open the dialog by calling dialogs.open method and sending the payload
         axios.post(`${SLACK_API_URL}/dialog.open`, qs.stringify(dialog))
             .then((result) => {
                 debug('dialog.open: %o', result.data);
-                var responseData = { "text": "Got it! Thank you." }
-                res.status(200).json(responseData)
+                res.send('')
             }).catch((err) => {
                 debug('dialog.open call failed: %o', err);
                 res.sendStatus(500);
