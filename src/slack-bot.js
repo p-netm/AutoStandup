@@ -1,4 +1,11 @@
-const dotenv = require("dotenv")
+if (process.env.NODE_ENV !== 'production') {
+    const dotenv = require('dotenv')//Configure environmental variables 
+    const result = dotenv.config()
+
+    if (result.error) {
+        throw result.error
+    }
+}
 const Slackbot = require('slackbots');
 const AppBootstrap = require("./main")
 const channelName = "standups"
@@ -7,12 +14,7 @@ const channelName = "standups"
 const params = {
     icon: process.env.APP_NAME
 }
-//Configure environmental variables 
-const result = dotenv.config()
 
-if (result.error) {
-    throw result.error
-}
 
 const bot = new Slackbot({
     token: process.env.SLACK_ACCESS_TOKEN,

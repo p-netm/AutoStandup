@@ -1,4 +1,11 @@
-const dotenv = require('dotenv')
+if (process.env.NODE_ENV !== 'production') {
+    const dotenv = require('dotenv')//Configure environmental variables 
+    const result = dotenv.config()
+
+    if (result.error) {
+        throw result.error
+    }
+}
 const express = require("express")
 const bodyParser = require("body-parser")
 const cors = require("cors")
@@ -7,14 +14,6 @@ const DialogRouter = require("./api_routes/dialog-route.js")
 const AutoStandup = require("./slack-bot")
 const ontime = require("ontime")
 const debug = require("debug")("onaautostandup:index")
-
-//Configure environmental variables 
-const result = dotenv.config()
-
-if (result.error) {
-    debug("Error configuring environmental variables "+result.error)
-    throw result.error   
-}
 
 // Initialize app and attach middleware
 const app = express()

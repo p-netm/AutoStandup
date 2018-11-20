@@ -5,22 +5,21 @@
   "scripts": {
     "start": "DEBUG=onaautostandup node src/index.js"
   },
-  "authors": [ 
+  "authors": [
     "Pharis Kahama <pkahama@ona.io>",
     "Elly Kitoto <ekitoto@ona.io>"
   ],
   "license": "ISC",
-  "engines": { 
+  "engines": {
     "node": "8.12.0",
-    "npm":"6.4.1"
-   },
+    "npm": "6.4.1"
+  },
   "dependencies": {
     "axios": "^0.18.0",
     "bluebird": "^3.5.3",
     "body-parser": "^1.17.1",
     "cors": "^2.8.3",
     "debug": "^3.2.6",
-    "dotenv": "^6.1.0",
     "express": "^4.16.4",
     "moment": "^2.22.2",
     "ontime": "0.0.6",
@@ -28,5 +27,8 @@
     "slackbots": "^1.2.0",
     "sqlite3": "^4.0.4",
     "tsscmp": "^1.0.6"
+  },
+  "devDependencies": {
+    "dotenv": "^6.1.0"
   }
 }
