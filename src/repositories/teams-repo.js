@@ -38,6 +38,10 @@ class TeamRepository {
         const statement = "SELECT * FROM teams WHERE id = ?"
         return this.dao.get(statement, [id])
     }
+    getByName(name) {
+        const statement = "SELECT * FROM teams WHERE name = ?"
+        return this.dao.get(statement, [name])
+    }
     getAllTeams() {
         const statement = "SELECT * FROM teams"
         return this.dao.all(statement)

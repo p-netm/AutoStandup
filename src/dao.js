@@ -6,6 +6,7 @@ class AppDao {
         this.db = new sqlite3.Database(dbFilePath, (err) => {
             if (err) {
                 console.log("Database connection failed!")
+                console.error(err.stack)
             } else {
                 console.log("Database connection successful!")
             }

@@ -24,32 +24,27 @@ const bot = new Slackbot({
 class AutoStandup {
 
     constructor() {
-        this.initBot()
+        if (bot === undefined) {            
+            this.initBot()           
+        }
     }
 
     initBot() {
         bot.on('start', function () {
             console.log("[+] Interaction with Bot initiated")
         })
-    }
-    /**
-     * First check users in local repository if not get users from slack 
-     * Send message to users at the specified time and post to standup channel as well
-    */
-    getUsers() {
-        AppBootstrap.userRepo.getAllUsers()
-    }
+    }    
 
-    promptUserStandup(user) {
-        bot.postMessageToUser(user, "Hey, kindly submit your standups", params)
+    sendMessageToUser(user, msg) {
+        bot.postMessageToUser(user, msg, params)
             .fail(function (data) {
                 console.error("[!Post to User] Error occured")
                 console.error(data.error)
                 return
             })
-        console.log("[+] Prompted user " + user + " for standup")
+        console.log("[+] Posted message to @" + user)
     }
-
+   
     promptStandupOnChannel() {
         bot.postMessageToChannel(channelName, "@here Please submit your standups", params)
             .fail(function (data) {
@@ -59,6 +54,9 @@ class AutoStandup {
             })
         console.log("[+] Prompted channel for standup")
     }
+    saveStandup(standupDetails) {
+        AppBootstrap.userStandupRepo.add(standupDetails)
+    }
 }
 
-module.exports = AutoStandup
+module.exports = AutoStandup 

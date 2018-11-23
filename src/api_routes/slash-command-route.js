@@ -11,8 +11,9 @@ const axios = require("axios")
 const qs = require("querystring")
 const SlashCommandRouter = express.Router()
 const debug = require("debug")("onaautostandup:slash-command-route")
-const SLACK_API_URL = 'https://slack.com/api';
+const SLACK_API_URL = 'https://slack.com/api'
 const signature = require("../verifySignature")
+const moment = require("moment")
 
 /**
  * Express route to handle post request when the slash command is invoked by the 
@@ -20,7 +21,7 @@ const signature = require("../verifySignature")
  */
 SlashCommandRouter.post('/slashcmd/new', function (req, res) {
 
-    const { text, trigger_id } = req.body;
+    const { text, trigger_id } = req.body
 
     if (signature.isVerified(req)) {
         const dialog = {
@@ -30,16 +31,17 @@ SlashCommandRouter.post('/slashcmd/new', function (req, res) {
                 title: 'Submit standup update',
                 callback_id: 'submit-standup',
                 submit_label: 'Submit',
+                state: moment().format("Do MMMM YYYY"),
                 elements: [
                     {
-                        label: 'Date',
+                        label: 'Posting standup for',
                         type: 'text',
                         name: 'date',
                         value: text,
-                        hint: 'Date of submission.(Format dd/mm/yyyy) Defaults to today',
+                        hint: ' Default value is today. You can also type yesterday or date in the format (yyyy-mm-dd).',
                     },
                     {
-                        label: 'Team',
+                        label: 'My team',
                         type: 'select',
                         name: 'team',
                         options: [
@@ -52,7 +54,7 @@ SlashCommandRouter.post('/slashcmd/new', function (req, res) {
                         ],
                     },
                     {
-                        label: 'Standup updates',
+                        label: 'My updates',
                         type: 'textarea',
                         name: 'standups',
                         optional: false,
@@ -60,21 +62,20 @@ SlashCommandRouter.post('/slashcmd/new', function (req, res) {
                     },
                 ],
             }),
-        };
+        }
 
         // open the dialog by calling dialogs.open method and sending the payload
         axios.post(`${SLACK_API_URL}/dialog.open`, qs.stringify(dialog))
             .then((result) => {
-                debug('dialog.open: %o', result.data);
-                console.log(req.body)
-                res.send('')
+                console.log('dialog.open: %o', result.data)              
+                res.status(200).send('')
             }).catch((err) => {
-                debug('dialog.open call failed: %o', err);
-                res.sendStatus(500);
-            });
+                console.error('dialog.open call failed: %o', err)
+                res.sendStatus(500)
+            })
     } else {
-        debug('Verification token mismatch');
-        res.status(404).end();
+        debug('Verification token mismatch')
+        res.status(404).end()
     }
 
 })
