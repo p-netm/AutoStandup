@@ -49,12 +49,21 @@ const autoStandup = new AutoStandup()
 
 ontime({
     log: true,
-    cycle: ['11:00:00', '15:10:00'],
+    cycle: ['11:00:00', '2:10:00'],
 }, function (ot) {
     autoStandup.promptStandupOnChannel()
     ot.done()
     return
 })
+ontime({
+    log: true,
+    cycle: ['15:00:00'],
+}, function (ot) {   
+    autoStandup.postStandupsToChannel()
+    ot.done()
+    return
+})
+autoStandup.respondToMessages()
 
 //Start listening to requests
 app.listen(process.env.PORT || 7777, function () {

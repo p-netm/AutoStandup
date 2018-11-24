@@ -24,13 +24,12 @@ DialogRouter.post('/dialog/new', function (req, res, next) {
     const body = JSON.parse(req.body.payload)
     if (signature.isVerified(req)) {
         let standupDetails = {
-            username: body.user.name,
+            username: body.user.id,
             standup_for: body.submission.date,
-            team: body.submission.team != "" ? body.submission.team : null,
+            team: body.submission.team != "None" ? body.submission.team : null,
             standup: body.submission.standups,
             date_posted: body.state
         }
-
         console.log("Form submission id : " + body.callback_id);
         res.status(200).json({})
         slackBot.saveStandup(standupDetails)

@@ -22,7 +22,7 @@ const moment = require("moment")
 SlashCommandRouter.post('/slashcmd/new', function (req, res) {
 
     const { text, trigger_id } = req.body
-
+    console.log(req.body)
     if (signature.isVerified(req)) {
         const dialog = {
             token: process.env.SLACK_ACCESS_TOKEN,
@@ -45,6 +45,7 @@ SlashCommandRouter.post('/slashcmd/new', function (req, res) {
                         type: 'select',
                         name: 'team',
                         options: [
+                            { label: 'No Team', value: "None" },
                             { label: 'OpenSRP', value: 'Open SRP' },
                             { label: 'Canopy', value: 'Canopy' },
                             { label: 'Kaznet', value: 'Kaznet' },
