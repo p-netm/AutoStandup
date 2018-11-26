@@ -1,3 +1,5 @@
+const axios = require('axios');
+
 if (process.env.NODE_ENV !== 'production') {
     const dotenv = require('dotenv')//Configure environmental variables 
     const result = dotenv.config()
@@ -16,14 +18,17 @@ const params = {
     icon: process.env.APP_NAME
 }
 
-
+const qs = require("querystring")
+const SLACK_API_URL = 'https://slack.com/api';
 const bot = new Slackbot({
     token: process.env.SLACK_ACCESS_TOKEN,
     name: process.env.APP_NAME,
 });
 
-class AutoStandup {
 
+
+class AutoStandup {
+    
     constructor() {
         if (bot === undefined) {
             this.initBot()
@@ -32,18 +37,35 @@ class AutoStandup {
 
     initBot() {
         bot.on('start', function () {
-            console.log("[+] Interaction with Bot initiated")          
-        })       
+            console.log("[+] Interaction with Bot initiated")
+        })
+    }
+    /**
+     * First check users in local repository if not get users from slack 
+     * Send message to users at the specified time and post to standup channel as well
+    */
+   
+    getUsers() {
+        AppBootstrap.userRepo.getAllUsers()
     }
 
-    sendMessageToUser(user, msg) {
-        bot.postMessageToUser(user, msg, params)
-            .fail(function (data) {
-                console.error("[!Post to User] Error occured")
-                console.error(data.error)
-                return
-            })
-        console.log("[+] Posted message to @" + user)
+    promptIndividualStandup() {
+        axios.get(`${SLACK_API_URL}/conversations.members?token=${process.env.SLACK_ACCESS_TOKEN}&channel=CDZF1KUP6&pretty=1`)
+            .then((response) => {
+                console.log('response', response.body)
+                const members = response.data.members
+                for (var i = 0; i <members.length; i++){
+                    bot.postMessage(members[i], "@here Please submit your standup", params)
+                        .fail(function (data) {
+                            console.error("[!Post to kahummer] Error occured")
+                            console.error(data.error)
+                            return
+                        })
+                    console.log("[+] Prompted ind user for standup")
+                }
+            }).catch((error) => {
+                console.log(error)
+            });
     }
 
     promptStandupOnChannel() {
