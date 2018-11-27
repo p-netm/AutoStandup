@@ -46,7 +46,7 @@ app.get('/', (req, res) => {
 AppBootstrap.main()
 
 const autoStandup = new AutoStandup()
-autoStandup.promptIndividualStandup()
+
 
 //prompt standups on channel
 ontime({
@@ -67,6 +67,14 @@ ontime({
 })
 autoStandup.respondToMessages()
 // acts as a reminder post reminder to individuals
+ontime({
+    log: true,
+    cycle: ['11:00:00', '15:10:00'],
+}, function (ot) {
+    autoStandup.promptIndividualStandup()
+    ot.done()
+    return
+})
 ontime({
     log: true,
     cycle: ['12:00:00', '15:10:00'],
