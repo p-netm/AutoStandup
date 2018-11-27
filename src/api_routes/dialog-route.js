@@ -1,11 +1,44 @@
 const express = require("express")
 const DialogRouter = express.Router()
+const signature = require("../verifySignature")
+const AutoStandup = require("../slack-bot")
+const slackBot = new AutoStandup()
+
+const botResponse = new Array("Got it! Thanks", "Awesome!",
+    "Cool. Will get it posted.", "Great!", "Thank you!", "Thanks!", "You are awesome", "Yes!",
+    "Just doing my job", "Okay!", "Alright!")
+
+function pickRandomResponse() {
+    var pos = Math.floor(Math.random() * (botResponse.length - 0) + 0)
+    return botResponse[pos]
+}
+
+function sendConfirmation(userName) {
+    slackBot.sendMessageToUser(userName, pickRandomResponse())
+}
+
+
 
 //Handle post request from slack
 DialogRouter.post('/dialog/new', function (req, res, next) {
-    
-    res.statusCode = 200
-    res.json({})
+    const body = JSON.parse(req.body.payload)
+    if (signature.isVerified(req)) {
+        let standupDetails = {
+            username: body.user.id,
+            standup_for: body.submission.date,
+            team: body.submission.team != "None" ? body.submission.team : null,
+            standup: body.submission.standups,
+            date_posted: body.state
+        }
+        console.log("Form submission id : " + body.callback_id);
+        res.status(200).json({})
+        slackBot.saveStandup(standupDetails)
+        sendConfirmation(body.user.name)
+    } else {
+        console.log("Token Mismatch!")
+        res.status(404).end()
+    }
+
 })
 
 //Test get request from slack
