@@ -21,8 +21,7 @@ const moment = require("moment")
  */
 SlashCommandRouter.post('/slashcmd/new', function (req, res) {
 
-    const { text, trigger_id } = req.body
-    console.log(req.body)
+    const { text, trigger_id } = req.body   
     if (signature.isVerified(req)) {
         const dialog = {
             token: process.env.SLACK_ACCESS_TOKEN,
