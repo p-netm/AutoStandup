@@ -53,7 +53,7 @@ class UserStandup {
         return this.dao.all(statement, [team])
     }
     getAllTeams() {
-        const statement = "SELECT DISTINCT team FROM user_standups ORDER BY team ASC"
+        const statement = "SELECT DISTINCT team FROM user_standups WHERE team IS NOT NULL ORDER BY team ASC "
         return this.dao.all(statement)
     }
     getByDatePosted(datePosted) {

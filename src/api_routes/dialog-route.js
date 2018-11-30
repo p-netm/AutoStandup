@@ -1,6 +1,6 @@
 const express = require("express")
 const DialogRouter = express.Router()
-const signature = require("../verifySignature")
+const signature = require("../verify-signature")
 const AutoStandup = require("../slack-bot")
 const slackBot = new AutoStandup()
 
@@ -13,8 +13,8 @@ function pickRandomResponse() {
     return botResponse[pos]
 }
 
-function sendConfirmation(userName) {
-    slackBot.sendMessageToUser(userName, pickRandomResponse())
+function sendConfirmation(userId) {
+    slackBot.sendMessageToUser(userId, pickRandomResponse())
 }
 
 
@@ -33,7 +33,7 @@ DialogRouter.post('/dialog/new', function (req, res, next) {
         console.log("Form submission id : " + body.callback_id);
         res.status(200).json({})
         slackBot.saveStandup(standupDetails)
-        sendConfirmation(body.user.name)
+        sendConfirmation(body.user.id)
     } else {
         console.log("Token Mismatch!")
         res.status(404).end()

@@ -8,82 +8,129 @@ if (process.env.NODE_ENV !== 'production') {
         throw result.error
     }
 }
-const Slackbot = require('slackbots');
 const AppBootstrap = require("./main")
 const channelName = "standups"
 const moment = require("moment")
 const today = moment().format("Do MMMM YYYY")
+const token = process.env.SLACK_ACCESS_TOKEN
 
-const params = {
-    icon: process.env.APP_NAME
+const { RTMClient, WebClient, ErrorCode } = require("@slack/client")
+const rtm = new RTMClient(token)
+const web = new WebClient(token)
+rtm.start()
+
+const promptResponse = new Array(
+    "*Hey*, submit your daily standup.\ntype  *`/autostandup today`* to get started for help type *`/autostandup help`*",
+    "*Hi*, another day to submit your standup.\ntype  *`/autostandup today`* to get started for help type *`/autostandup help`*",
+    "*Hey*, time for standup update.\ntype  *`/autostandup today`* to get started for help type *`/autostandup help`*",
+    "*Greetings!*, please submit your daily standup.\ntype  *`/autostandup today`* to get started for help type *`/autostandup help`*")
+
+function pickRandomPromptMsg() {
+    var pos = Math.floor(Math.random() * (promptResponse.length - 0) + 0)
+    return promptResponse[pos]
 }
 
-const qs = require("querystring")
-const SLACK_API_URL = 'https://slack.com/api';
-const bot = new Slackbot({
-    token: process.env.SLACK_ACCESS_TOKEN,
-    name: process.env.APP_NAME,
-});
-
-
-
 class AutoStandup {
-    
-    constructor() {
-        if (bot === undefined) {
-            this.initBot()
-        }
+
+    /***
+     *  Get conversation id for user with id [userId]
+     *  Post message to the user
+     */
+    sendMessageToUser(userId, message) {
+        web.conversations.list({ exclude_archived: true, types: "im" })
+            .then((res) => {
+                const foundUser = res.channels.find(u => u.user === userId);
+                if (foundUser) {
+                    rtm.sendMessage(message, foundUser.id)
+                        .then((msg) => console.log(`Message sent to user ${foundUser.user} with ts:${msg.ts}`))
+                        .catch(console.error);
+                } else {
+                    console.log('User doesnt exist or is the bot user!');
+                }
+            });
+
     }
 
-    initBot() {
-        bot.on('start', function () {
-            console.log("[+] Interaction with Bot initiated")
+    /**
+     * Get users then prompt them for standups 
+     */
+    promptIndividualStandup() {
+        this.getChannelMembers().then((res) => {
+            let allChannelUsers = res.members
+            allChannelUsers.forEach(user => {
+                this.sendMessageToUser(user, pickRandomPromptMsg())
+            })
         })
+
     }
     /**
-     * First check users in local repository if not get users from slack 
-     * Send message to users at the specified time and post to standup channel as well
-    */
-   
-    getUsers() {
-        AppBootstrap.userRepo.getAllUsers()
-    }
+     * Find channel that the bot belongs to and return the members 
+     */
+    getChannelMembers() {
+        const resp = {}
+        return web.channels.list()
+            .then((res) => {
+                const channel = res.channels.find(c => c.is_member);
+                if (channel) {
+                    resp.ok = true
+                    resp.members = channel.members
 
-    promptIndividualStandup() {
-        axios.get(`${SLACK_API_URL}/conversations.members?token=${process.env.SLACK_ACCESS_TOKEN}&channel=CDZF1KUP6&pretty=1`)
-            .then((response) => {
-                console.log('response', response.body)
-                const members = response.data.members
-                for (var i = 0; i <members.length; i++){
-                    bot.postMessage(members[i], "@here Please submit your standup", params)
-                        .fail(function (data) {
-                            console.error("[!Post to kahummer] Error occured")
-                            console.error(data.error)
-                            return
-                        })
-                    console.log("[+] Prompted ind user for standup")
+                } else {
+                    resp.ok = false
+                    resp.members = []
                 }
-            }).catch((error) => {
-                console.log(error)
+                return Promise.resolve(resp)
+            })
+            .catch((error) => {
+                if (error.code === ErrorCode.PlatformError) {
+                    console.log(error.message)
+                    console.log(error.data)
+                } else {
+                    console.error
+                }
+                return Promise.reject(error)
             });
     }
 
-    promptStandupOnChannel() {
-        bot.postMessageToChannel(channelName, "<@here> Please submit your standups", params)
-            .fail(function (data) {
-                console.error("[!Post to Channel] Error occured")
-                console.error(data.error)
-                return
+    notifyBeforePostingStandup() {
+        this.getChannelMembers().then((res) => {
+            let allChannelUsers = res.members
+            allChannelUsers.forEach(user => {
+                this.sendMessageToUser(user, ">>>`Notification` *<@" + user + ">* today's standup  will be posted in *30 minutes* time. 🐵")
             })
-        console.log("[+] Prompted channel for standup")
+        })
     }
 
     postStandupsToChannel() {
-        this.getStandups()
+        this.getTeams().then((res) => {
+            let teams = res
+            teams.forEach((t) => {
+                if (t !== null) {
+                    console.log(t.team)
+                }
+            })
+        })
     }
+
     saveStandup(standupDetails) {
         AppBootstrap.userStandupRepo.add(standupDetails)
     }
+    getTeams() {
+        return AppBootstrap.userStandupRepo.getAllTeams()
+            .then((res) => {
+                return Promise.resolve(res)
+            })
+            .catch((error) => {
+                if (error.code === ErrorCode.PlatformError) {
+                    console.log(error.message)
+                    console.log(error.data)
+                } else {
+                    console.error
+                }
+                return Promise.reject(error)
+            })
+    }
+
     getStandups() {
         var standupUpdate = `*📅 Showing Ona Standup Updates On ${today}*\n\n\n\n`
         AppBootstrap.userStandupRepo.getByDatePosted(today)
@@ -99,18 +146,40 @@ class AutoStandup {
                         standupUpdate += `\`\`\`${standup.standup}\`\`\`\n\n\n`
 
                     }))
-                    bot.postMessageToChannel(channelName, standupUpdate, params)
-                        .fail(function (data) {
-                            console.error("[!Post to Channel] Error occured")
-                            console.error(data.error)
-                            return
+                    web.conversations.list({ exclude_archived: true, types: "public_channel" })
+                        .then((res) => {
+                            const channels = res.channels
+                            channels.forEach(channel => {
+                                if (channel.name === channelName) {
+                                    web.chat.postMessage({ text: standupUpdate, channel: channel.id })
+                                }
+                            });
                         })
-                    console.log("[+] Prompted channel for standup")
+
                 }
             })
     }
-    respondToMessages(){
-        
+
+    respondToMessages() {
+
+    }
+
+    openDialog(triggerId, dialog) {
+        return web.dialog.open({ trigger_id: triggerId, dialog: JSON.stringify(dialog) })
+            .then((res) => {
+                console.log('Open dialog res: %o ', res);
+                return Promise.resolve(res)
+
+            })
+            .catch((error) => {
+                if (error.code === ErrorCode.PlatformError) {
+                    console.log(error.message)
+                    console.log(error.data)
+                } else {
+                    console.error
+                }
+                return Promise.reject(error)
+            })
     }
 
 }
