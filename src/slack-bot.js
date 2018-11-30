@@ -1,4 +1,3 @@
-const axios = require('axios');
 
 if (process.env.NODE_ENV !== 'production') {
     const dotenv = require('dotenv')//Configure environmental variables 
@@ -102,14 +101,22 @@ class AutoStandup {
     }
 
     postStandupsToChannel() {
+        let standupUpdate = `*📅 Showing Ona Standup Updates On ${today}*\n\n\n\n`
         this.getTeams().then((res) => {
-            let teams = res
-            teams.forEach((t) => {
-                if (t !== null) {
-                    console.log(t.team)
-                }
-            })
+            for (var counter = 0; counter < res.length; counter++) {
+                var team = res[counter].team
+            
+                this.getTeamStandups(team)
+                    .then((res) => {
+                        console.log(`found ${res.length} for ${team}` )
+                        console.log(res)
+                    })
+                
+
+            }
+            
         })
+
     }
 
     saveStandup(standupDetails) {
@@ -117,6 +124,21 @@ class AutoStandup {
     }
     getTeams() {
         return AppBootstrap.userStandupRepo.getAllTeams()
+            .then((res) => {
+                return Promise.resolve(res)
+            })
+            .catch((error) => {
+                if (error.code === ErrorCode.PlatformError) {
+                    console.log(error.message)
+                    console.log(error.data)
+                } else {
+                    console.error
+                }
+                return Promise.reject(error)
+            })
+    }
+    getTeamStandups(team) {
+        return AppBootstrap.userStandupRepo.getByTeam(team)
             .then((res) => {
                 return Promise.resolve(res)
             })

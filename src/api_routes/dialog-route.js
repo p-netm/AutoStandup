@@ -26,7 +26,7 @@ DialogRouter.post('/dialog/new', function (req, res, next) {
         let standupDetails = {
             username: body.user.id,
             standup_for: body.submission.date,
-            team: body.submission.team != "None" ? body.submission.team : null,
+            team: body.submission.team,
             standup: body.submission.standups,
             date_posted: body.state
         }

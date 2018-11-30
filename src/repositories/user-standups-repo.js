@@ -49,7 +49,7 @@ class UserStandup {
         return this.dao.all(statement, [username])
     }
     getByTeam(team) {
-        const statement = "SELECT * FROM user_standups WHERE team = ?"
+        const statement = "SELECT * FROM user_standups WHERE team = ?  AND team IS NOT NULL ORDER BY team ASC"
         return this.dao.all(statement, [team])
     }
     getAllTeams() {
