@@ -153,34 +153,7 @@ class AutoStandup {
             })
     }
 
-    getStandups() {
-        var standupUpdate = `*📅 Showing Ona Standup Updates On ${today}*\n\n\n\n`
-        AppBootstrap.userStandupRepo.getByDatePosted(today)
-            .then((standups) => {
-                if (standups.length > 0) {
-                    Promise.all(standups.map((standup) => {
-                        var teamName = standup.team
-                        if (teamName != null)
-                            teamName = teamName.charAt(0).toUpperCase() + teamName.slice(1)
-                        var standupFor = standup.standup_for
-                        standupFor = standupFor.charAt(0).toUpperCase() + standupFor.slice(1)
-                        standupUpdate += `*<@${standup.username}> ${teamName !== null ? teamName : ""} - ${standupFor}:*\n\n`
-                        standupUpdate += `\`\`\`${standup.standup}\`\`\`\n\n\n`
-
-                    }))
-                    web.conversations.list({ exclude_archived: true, types: "public_channel" })
-                        .then((res) => {
-                            const channels = res.channels
-                            channels.forEach(channel => {
-                                if (channel.name === channelName) {
-                                    web.chat.postMessage({ text: standupUpdate, channel: channel.id })
-                                }
-                            });
-                        })
-
-                }
-            })
-    }
+  
 
     respondToMessages() {
 

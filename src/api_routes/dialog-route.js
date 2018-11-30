@@ -6,7 +6,7 @@ const slackBot = new AutoStandup()
 
 const botResponse = new Array("Got it! Thanks", "Awesome!",
     "Cool. Will get it posted.", "Great!", "Thank you!", "Thanks!", "You are awesome", "Yes!",
-    "Just doing my job", "Okay!", "Alright!")
+    "Just doing my job", "Okay!", "Alright!","Nice, thanks")
 
 function pickRandomResponse() {
     var pos = Math.floor(Math.random() * (botResponse.length - 0) + 0)
@@ -25,9 +25,9 @@ DialogRouter.post('/dialog/new', function (req, res, next) {
     if (signature.isVerified(req)) {
         let standupDetails = {
             username: body.user.id,
-            standup_for: body.submission.date,
+            standup_today: body.submission.standup_today,
             team: body.submission.team,
-            standup: body.submission.standups,
+            standup_previous: body.submission.standup_previous,
             date_posted: body.state
         }
         console.log("Form submission id : " + body.callback_id);

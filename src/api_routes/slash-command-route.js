@@ -7,10 +7,8 @@ if (process.env.NODE_ENV !== 'production') {
     }
 }
 const express = require("express")
-const qs = require("querystring")
 const SlashCommandRouter = express.Router()
 const debug = require("debug")("onaautostandup:slash-command-route")
-const SLACK_API_URL = 'https://slack.com/api'
 const signature = require("../verify-signature")
 const moment = require("moment")
 const AutoStandup = require("../slack-bot")
@@ -22,7 +20,7 @@ const slackBot = new AutoStandup()
  * users of the app
  */
 SlashCommandRouter.post('/slashcmd/new', function (req, res) {
-    const { text, trigger_id } = req.body
+    const { trigger_id } = req.body
     if (signature.isVerified(req)) {
         const dialog = {
             title: 'Submit standup update',
@@ -31,18 +29,11 @@ SlashCommandRouter.post('/slashcmd/new', function (req, res) {
             state: moment().format("Do MMMM YYYY"),
             elements: [
                 {
-                    label: 'Posting standup for',
-                    type: 'text',
-                    name: 'date',
-                    value: text,
-                    hint: ' Default value is today. You can also type yesterday or date in the format (yyyy-mm-dd).',
-                },
-                {
-                    label: 'My team',
+                    label: 'Select team',
                     type: 'select',
                     name: 'team',
                     options: [
-                        { label: 'No Team', value: "None" },
+                        { label: 'Not in a dev team', value: "None" },
                         { label: 'OpenSRP', value: 'Open SRP' },
                         { label: 'Canopy', value: 'Canopy' },
                         { label: 'Kaznet', value: 'Kaznet' },
@@ -52,12 +43,20 @@ SlashCommandRouter.post('/slashcmd/new', function (req, res) {
                     ],
                 },
                 {
-                    label: 'My updates',
+                    label: 'Today\'s update',
                     type: 'textarea',
-                    name: 'standups',
+                    name: 'standup_today',
                     optional: false,
-                    hint: "Provide updates in separate lines with - prefix. e.g - Added tests to Kaznet's playbook"
+                    hint: "* Provide updates on what you are working on today in separate lines with - prefix. e.g - Add unit tests to Kaznet's playbook"
                 },
+                {
+                    label: 'Previously/Yesterday',
+                    type: 'textarea',
+                    name: 'standup_previous',
+                    optional: true,
+                    hint: 'Provide updates on what you did (previously/yesterday) in separate lines with - prefix. e.g - Deployed OpenMRS and OpenSRP servers',
+                },
+
             ],
 
         }
