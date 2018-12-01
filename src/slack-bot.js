@@ -19,10 +19,10 @@ const web = new WebClient(token)
 rtm.start()
 
 const promptResponse = new Array(
-    "*Hey*, submit your daily standup.\ntype  *`/autostandup today`* to get started for help type *`/autostandup help`*",
-    "*Hi*, another day to submit your standup.\ntype  *`/autostandup today`* to get started for help type *`/autostandup help`*",
-    "*Hey*, time for standup update.\ntype  *`/autostandup today`* to get started for help type *`/autostandup help`*",
-    "*Greetings!*, please submit your daily standup.\ntype  *`/autostandup today`* to get started for help type *`/autostandup help`*")
+    "Hey, submit your daily standup.\ntype  *`/autostandup`* to get started for help type *`/autostandup help`*",
+    "Hi, another day to submit your standup.\ntype  *`/autostandup`* to get started for help type *`/autostandup help`*",
+    "Hey, time for standup update.\ntype  *`/autostandup`* to get started for help type *`/autostandup help`*",
+    "Greetings!, please submit your daily standup.\ntype  *`/autostandup`* to get started for help type *`/autostandup help`*")
 
 function pickRandomPromptMsg() {
     var pos = Math.floor(Math.random() * (promptResponse.length - 0) + 0)
@@ -50,18 +50,14 @@ class AutoStandup {
 
     }
 
-    /**
-     * Get users then prompt them for standups 
+    /***
+     * Saves standup to db
      */
-    promptIndividualStandup() {
-        this.getChannelMembers().then((res) => {
-            let allChannelUsers = res.members
-            allChannelUsers.forEach(user => {
-                this.sendMessageToUser(user, pickRandomPromptMsg())
-            })
-        })
-
+    saveStandup(standupDetails) {
+        AppBootstrap.userStandupRepo.add(standupDetails)
     }
+
+
     /**
      * Find channel that the bot belongs to and return the members 
      */
@@ -91,6 +87,22 @@ class AutoStandup {
             });
     }
 
+    /**
+     * Get users then prompt them for standups 
+    */
+    promptIndividualStandup() {
+        this.getChannelMembers().then((res) => {
+            let allChannelUsers = res.members
+            allChannelUsers.forEach(user => {
+                this.sendMessageToUser(user, pickRandomPromptMsg())
+            })
+        })
+
+    }
+
+    /**
+     * Notify users 30 minutes before posting standup on channel
+     */
     notifyBeforePostingStandup() {
         this.getChannelMembers().then((res) => {
             let allChannelUsers = res.members
@@ -100,28 +112,7 @@ class AutoStandup {
         })
     }
 
-    postStandupsToChannel() {
-        let standupUpdate = `*📅 Showing Ona Standup Updates On ${today}*\n\n\n\n`
-        this.getTeams().then((res) => {
-            for (var counter = 0; counter < res.length; counter++) {
-                var team = res[counter].team
-            
-                this.getTeamStandups(team)
-                    .then((res) => {
-                        console.log(`found ${res.length} for ${team}` )
-                        console.log(res)
-                    })
-                
 
-            }
-            
-        })
-
-    }
-
-    saveStandup(standupDetails) {
-        AppBootstrap.userStandupRepo.add(standupDetails)
-    }
     getTeams() {
         return AppBootstrap.userStandupRepo.getAllTeams()
             .then((res) => {
@@ -138,7 +129,7 @@ class AutoStandup {
             })
     }
     getTeamStandups(team) {
-        return AppBootstrap.userStandupRepo.getByTeam(team)
+        return AppBootstrap.userStandupRepo.getByTeam(team, today)
             .then((res) => {
                 return Promise.resolve(res)
             })
@@ -153,12 +144,129 @@ class AutoStandup {
             })
     }
 
-  
+    /**
+     * Post formatted standups to channel
+     */
+    postTeamStandupsToChannel() {    
+        let standupUpdate = `*📅 Showing Ona Standup Updates On ${today}*\n\n`       
+        AppBootstrap.userStandupRepo.getByDatePosted(today)
+            .then((data) => {
+                let attachments = []
 
+                data.forEach((item, index) => {
+                    let attachment =
+                    {
+                        color: "#cfcfcc",
+                        title: `<@${item.username}>`,
+                        fallback: "Sorry Could not display standups in this type of device. Check in desktop browser",
+                        fields: [
+                            {
+                                title: "Today",
+                                value: `${item.standup_today}`,
+                                short: false
+                            }
+
+                        ],
+                        footer: `Posted as ${item.team}`,
+                    }
+                    if (item.standup_previous != null) {
+                        const previously = {
+                            title: "Yesterday/Previously",
+                            value: `${item.standup_previous == null ? "Not specified" : item.standup_previous}`,
+                            short: false
+                        }
+                        attachment.fields.push(previously)
+                    }
+                    if (index === 0) {
+                        attachment.pretext = `Team ${item.team} Standups`
+                        attachment.color =  "#7DCC34"
+                    }
+                    if (index > 0) {
+                        if (item.team != data[index - 1].team) {
+                            attachment.pretext = `Team ${item.team} Standups`
+                            attachment.color =  "#7DCC34"
+                        }
+                    }
+                    attachments.push(attachment)
+
+                })
+                return Promise.resolve(attachments)
+
+            })
+            .then((allAttachments) => {
+                console.log("Total attachments  => %d", allAttachments.length)
+                web.channels.list()
+                    .then((res) => {
+                        const channel = res.channels.find(c => c.is_member);
+                        if (channel) {
+                            web.chat.postMessage({ text: standupUpdate, attachments: allAttachments, channel: channel.id })
+                                .then((msg) => console.log(`Message sent to channel ${channel.name} with ts:${msg.ts}`))
+                                .catch(console.error);
+                        } else {
+                            console.log('This bot does not belong to any channel, invite it to at least one and try again');
+                        }
+                    })
+            })
+
+
+    }
+
+    postIndividualStandupToChannel(item) {
+
+        let standupUpdate = `🔔 \`Update\` *New standup update posted ${today}*\n\n`
+        let attachment =
+        {
+            color: "#2768BB",
+            title: `<@${item.username}>`,
+            fallback: "Sorry Could not display standups in this type of device. Check in desktop browser",
+            fields: [
+                {
+                    title: "Today",
+                    value: `${item.standup_today}`,
+                    short: false
+                }
+
+            ],
+            footer: `Posted as individual`,
+        }
+        if (item.standup_previous != null) {
+            const previously = {
+                title: "Yesterday/Previously",
+                value: `${item.standup_previous == null ? "Not specified" : item.standup_previous}`,
+                short: false
+            }
+            attachment.fields.push(previously)
+        }
+
+        let attachments = []
+        attachments.push(attachment)
+        web.channels.list()
+            .then((res) => {
+                const channel = res.channels.find(c => c.is_member);
+                if (channel) {
+                    web.chat.postMessage({ text: standupUpdate, attachments: attachments, channel: channel.id })
+                        .then((msg) => console.log(`Message sent to channel ${channel.name} with ts:${msg.ts}`))
+                        .catch(console.error);
+                } else {
+                    console.log('This bot does not belong to any channel, invite it to at least one and try again');
+                }
+            })
+
+    }
+
+
+    /**
+     * Interact with users v
+     */
     respondToMessages() {
 
     }
 
+    /**
+     * 
+     * @param {trigerId used to load form} triggerId 
+     * @param {dialog elements} dialog 
+     */
     openDialog(triggerId, dialog) {
         return web.dialog.open({ trigger_id: triggerId, dialog: JSON.stringify(dialog) })
             .then((res) => {

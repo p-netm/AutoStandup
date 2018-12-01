@@ -75,7 +75,7 @@ const autoStandup = new AutoStandup()
 //     return
 // })
 // autoStandup.respondToMessages()
-//autoStandup.notifyBeforePostingStandup();
+ autoStandup.postTeamStandupsToChannel();
 //Start listening to requests
 app.listen(process.env.PORT || 7777, function () {
     console.log("[+] app listening for requests")

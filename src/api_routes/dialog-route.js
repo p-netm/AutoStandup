@@ -32,7 +32,16 @@ DialogRouter.post('/dialog/new', function (req, res, next) {
         }
         console.log("Form submission id : " + body.callback_id);
         res.status(200).json({})
-        slackBot.saveStandup(standupDetails)
+
+        if(standupDetails.team === "None"){
+            slackBot.postIndividualStandupToChannel(standupDetails)
+            standupDetails.status = 1
+            slackBot.saveStandup(standupDetails)
+        }else{
+            standupDetails.status = 0
+            slackBot.saveStandup(standupDetails)
+        }
+      
         sendConfirmation(body.user.id)
     } else {
         console.log("Token Mismatch!")

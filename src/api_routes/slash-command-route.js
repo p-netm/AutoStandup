@@ -29,11 +29,11 @@ SlashCommandRouter.post('/slashcmd/new', function (req, res) {
             state: moment().format("Do MMMM YYYY"),
             elements: [
                 {
-                    label: 'Select team',
+                    label: 'Post as',
                     type: 'select',
                     name: 'team',
                     options: [
-                        { label: 'Not in a dev team', value: "None" },
+                        { label: 'Individual', value: "None" },
                         { label: 'OpenSRP', value: 'Open SRP' },
                         { label: 'Canopy', value: 'Canopy' },
                         { label: 'Kaznet', value: 'Kaznet' },
@@ -41,6 +41,7 @@ SlashCommandRouter.post('/slashcmd/new', function (req, res) {
                         { label: 'Ona Data', value: 'Ona Data' },
                         { label: 'Gisida', value: 'Gisida' },
                     ],
+                    hint: "You can post individual standup or as team. Team standups will be group together"
                 },
                 {
                     label: 'Today\'s update',
