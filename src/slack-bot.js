@@ -112,38 +112,6 @@ class AutoStandup {
         })
     }
 
-
-    getTeams() {
-        return AppBootstrap.userStandupRepo.getAllTeams()
-            .then((res) => {
-                return Promise.resolve(res)
-            })
-            .catch((error) => {
-                if (error.code === ErrorCode.PlatformError) {
-                    console.log(error.message)
-                    console.log(error.data)
-                } else {
-                    console.error
-                }
-                return Promise.reject(error)
-            })
-    }
-    getTeamStandups(team) {
-        return AppBootstrap.userStandupRepo.getByTeam(team, today)
-            .then((res) => {
-                return Promise.resolve(res)
-            })
-            .catch((error) => {
-                if (error.code === ErrorCode.PlatformError) {
-                    console.log(error.message)
-                    console.log(error.data)
-                } else {
-                    console.error
-                }
-                return Promise.reject(error)
-            })
-    }
-
     /**
      * Post formatted standups to channel
      */
