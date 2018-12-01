@@ -107,7 +107,7 @@ class AutoStandup {
         this.getChannelMembers().then((res) => {
             let allChannelUsers = res.members
             allChannelUsers.forEach(user => {
-                this.sendMessageToUser(user, ">>>`Notification` *<@" + user + ">* today's standup  will be posted in *30 minutes* time. 🐵")
+                this.sendMessageToUser(user, ">>>`Notification` *<@" + user + ">* today's team standup  will be posted in *2hrs * time submit  yours if have not done so. 🐵")
             })
         })
     }

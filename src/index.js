@@ -70,12 +70,11 @@ const autoStandup = new AutoStandup()
 //     log: true,
 //     cycle: ['14:00:00'],
 // }, function (ot) {
-//     autoStandup.postStandupsToChannel()
+//     autoStandup.postTeamStandupsToChannel()
 //     ot.done()
 //     return
 // })
 // autoStandup.respondToMessages()
- autoStandup.postTeamStandupsToChannel();
 //Start listening to requests
 app.listen(process.env.PORT || 7777, function () {
     console.log("[+] app listening for requests")
