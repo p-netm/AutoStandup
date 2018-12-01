@@ -15,6 +15,7 @@
     "npm": "6.4.1"
   },
   "dependencies": {
+    "@slack/client": "^4.8.0",
     "axios": "^0.18.0",
     "bluebird": "^3.5.3",
     "body-parser": "^1.17.1",

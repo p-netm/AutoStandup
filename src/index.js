@@ -25,9 +25,9 @@ const rawBodyBuffer = (req, res, buf, encoding) => {
     }
 };
 
+app.use(cors())
 app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }))
 app.use(bodyParser.json({ verify: rawBodyBuffer }))
-app.use(cors())
 
 // Error handling middleware
 app.use(function (err, req, res, next) {
@@ -47,35 +47,34 @@ AppBootstrap.main()
 
 const autoStandup = new AutoStandup()
 
-
-//prompt standups on channel
-ontime({
-    log: true,
-    cycle: ['15:00:00'],
-}, function (ot) {   
-    autoStandup.postStandupsToChannel()
-    ot.done()
-    return
-})
-autoStandup.respondToMessages()
-// acts as a reminder post reminder to individuals
-ontime({
-    log: true,
-    cycle: ['11:00:00', '15:10:00'],
-}, function (ot) {
-    autoStandup.promptIndividualStandup()
-    ot.done()
-    return
-})
-ontime({
-    log: true,
-    cycle: ['12:00:00', '15:10:00'],
-}, function (ot) {
-    autoStandup.promptIndividualStandup()
-    ot.done()
-    return
-})
-
+/**
+ * Prompt individuals for standup
+ */
+// ontime({
+//     log: true,
+//     cycle: ['10:00:00'],
+// }, function (ot) {
+//     autoStandup.promptIndividualStandup()
+//     ot.done()
+//     return
+// })
+// ontime({
+//     log: true,
+//     cycle: ['12:10:00'],
+// }, function (ot) {
+//     autoStandup.notifyBeforePostingStandup()
+//     ot.done()
+//     return
+// })
+// ontime({
+//     log: true,
+//     cycle: ['14:00:00'],
+// }, function (ot) {
+//     autoStandup.postTeamStandupsToChannel()
+//     ot.done()
+//     return
+// })
+// autoStandup.respondToMessages()
 //Start listening to requests
 app.listen(process.env.PORT || 7777, function () {
     console.log("[+] app listening for requests")

@@ -7,9 +7,9 @@ class UserStandup {
         CREATE TABLE IF NOT EXISTS user_standups(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
-            standup_for TEXT  NOT NULL,
-            team TEXT NULL,
-            standup TEXT NOT NULL,
+            standup_today TEXT  NOT NULL, 
+            team TEXT NULL,                      
+            standup_previous TEXT NULL,
             date_posted TEXT NOT NULL,
             status INTEGER DEFAULT 0
 
@@ -18,18 +18,18 @@ class UserStandup {
         return this.dao.run(sql)
     }
     add(userStandup) {
-        const { username, standup_for, team, standup, date_posted } = userStandup
-        const insertStatement = `INSERT INTO user_standups (username,standup_for,team,standup,date_posted)
-         VALUES (?,?,?,?,?)`
-        this.dao.run(insertStatement, [username, standup_for, team, standup, date_posted])
+        const { username, standup_today, team, standup_previous, date_posted, status} = userStandup
+        const insertStatement = `INSERT INTO user_standups (username,standup_today,team,standup_previous,date_posted,status)
+         VALUES (?,?,?,?,?,?)`
+        this.dao.run(insertStatement, [username, standup_today, team, standup_previous, date_posted,status])
     }
 
     update(userStandup) {
-        const { id, username, standup_for, team, standup, date_posted, status } = userStandup
-        const updateStatement = `UPDATE user_standups SET username = ?, standup_for = ?,
-        team = ?, standup = ?, date_posted = ?, status = ? WHERE id = ? 
+        const { id, username, standup_today, team, standup_previous, date_posted, status } = userStandup
+        const updateStatement = `UPDATE user_standups SET username = ?, standup_today = ?,
+        team = ?, standup_previous = ?, date_posted = ?, status = ? WHERE id = ? 
         `
-        return this.dao.run(updateStatement, [username, standup_for, team, standup, date_posted, status, id])
+        return this.dao.run(updateStatement, [username, standup_today, team, standup_previous, date_posted, status, id])
     }
     updateStatus(id) {
         const updateStatement = `UPDATE user_standups SET  status = 1 WHERE id = ?`
@@ -48,12 +48,12 @@ class UserStandup {
         const statement = "SELECT * FROM user_standups WHERE username = ?"
         return this.dao.all(statement, [username])
     }
-    getByTeam(team) {
-        const statement = "SELECT * FROM user_standups WHERE team = ?"
-        return this.dao.all(statement, [team])
+    getByTeam(team,datePosted) {
+        const statement = "SELECT * FROM user_standups WHERE team = ? AND date_posted = ? AND status = 0 ORDER BY team ASC"
+        return this.dao.all(statement, [team,datePosted])
     }
     getAllTeams() {
-        const statement = "SELECT DISTINCT team FROM user_standups ORDER BY team ASC"
+        const statement = "SELECT DISTINCT team FROM user_standups WHERE team IS NOT NULL ORDER BY team ASC "
         return this.dao.all(statement)
     }
     getByDatePosted(datePosted) {
@@ -61,7 +61,7 @@ class UserStandup {
         return this.dao.all(statement, [datePosted])
     }    
     getAllUserStandups() {
-        const statement = "SELECT * FROM users_standups ORDER BY team"
+        const statement = "SELECT * FROM users_standups  WHERE team IS NOT NULL ORDER BY team"
         return this.dao.all(statement)
     }
 
