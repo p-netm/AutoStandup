@@ -41,7 +41,7 @@ class UserRepository {
         return this.dao.get(statement, [username])
     }
     getAllUsers() {
-        const statement = "SELECT * FROM users"
+        const statement = "SELECT  * FROM users"
         return this.dao.all(statement)
     }
 

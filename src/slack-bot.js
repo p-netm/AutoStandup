@@ -54,6 +54,33 @@ class AutoStandup {
       });
   }
 
+  // sendHelpToUser (userId, message) {
+  //   web.conversations
+  //     .list({exclude_archived: true, types: "im"})
+  //     .then(res => {
+  //       const foundUser = res.channel.find(u => u.user === userId)
+  //       if(foundUser){
+
+  //         web.chat
+  //         .postMessage({
+  //           text: standupUpdate,
+  //           attachments: attachments,
+  //           channel: channel.id
+  //         })
+  //         .then(msg =>
+  //           console.log(
+  //             `Message sent to channel ${channel.name} with ts:${msg.ts}`
+  //           )
+  //         )
+  //         .catch(console.error);
+  //     } else {
+  //       console.log(
+  //         "This bot does not belong to any channel, invite it to at least one and try again"
+  //       );
+  //       }
+  //     })
+  // }
+
   /***
    * Saves standup to db
    */
@@ -62,11 +89,27 @@ class AutoStandup {
   }
   /**Saves user to db
    */
+  getUsers() {
+    return AppBootstrap.userRepo
+      .getAllUsers()
+      .then(res => {
+        return Promise.resolve(res);
+      })
+      .catch(error => {
+        if (error.code === ErrorCode.PlatformError) {
+          console.log("error message", error.message);
+          console.log("error message", error.data);
+        } else {
+          console.error;
+        }
+        return Promise.reject(error);
+      });
+  }
+
   checkUser(username) {
     return AppBootstrap.userRepo
       .getByUsername(username)
       .then(res => {
-        console.log(res);
         return Promise.resolve(res);
       })
       .catch(error => {
@@ -79,11 +122,12 @@ class AutoStandup {
         return Promise.reject(error);
       });
   }
-  saveUser(username) {     
+
+  saveUser(username) {
     AppBootstrap.userRepo.add(username);
   }
   deleteUser(username) {
-      AppBootstrap.userRepo.deleteByUsername(username)
+    AppBootstrap.userRepo.deleteByUsername(username);
   }
   /**
    * Find channel that the bot belongs to and return the members
@@ -118,8 +162,18 @@ class AutoStandup {
    * Get users then prompt them for standups
    */
   promptIndividualStandup() {
+    let rmUserArr = [];
+    this.getUsers().then(res => {
+      res.forEach(res => {
+        rmUserArr.push(res.username);
+      });
+    });
     this.getChannelMembers().then(res => {
       let allChannelUsers = res.members;
+      allChannelUsers = allChannelUsers.filter(
+        item => !rmUserArr.includes(item)
+      );
+      
       allChannelUsers.forEach(user => {
         this.sendMessageToUser(user, pickRandomPromptMsg());
       });
@@ -130,8 +184,18 @@ class AutoStandup {
    * Notify users 30 minutes before posting standup on channel
    */
   notifyBeforePostingStandup() {
+    let rmUserArr = [];
+    this.getUsers().then(res => {
+      res.forEach(res => {
+        rmUserArr.push(res.username);
+      });
+    });
     this.getChannelMembers().then(res => {
       let allChannelUsers = res.members;
+      allChannelUsers = allChannelUsers.filter(
+        item => !rmUserArr.includes(item)
+      );
+      
       allChannelUsers.forEach(user => {
         this.sendMessageToUser(
           user,

@@ -62,8 +62,7 @@ SlashCommandRouter.post("/slashcmd/new", function(req, res) {
       ]
     };
   
-    console.log("unsubscribe", text);
-    switch (text) {
+    switch (text.trim()) {
       case "unsubscribe":     
         slackBot.checkUser(user_id).then((user) => {
           if (user === undefined) {                    
@@ -104,7 +103,7 @@ SlashCommandRouter.post("/slashcmd/new", function(req, res) {
             
         });
         break
-      default:
+      case "post":
         slackBot.openDialog(trigger_id, dialog).then(result => {
           if (result.ok === true) {
             res.status(200).send("");
@@ -112,6 +111,8 @@ SlashCommandRouter.post("/slashcmd/new", function(req, res) {
             res.status(500).end();
           }
         });
+      default:
+        
     }
   } else {
     debug("Verification token mismatch");
