@@ -46,36 +46,40 @@ app.get('/', (req, res) => {
 AppBootstrap.main()
 
 const autoStandup = new AutoStandup()
-autoStandup.notifyBeforePostingStandup()
 /**
  * Prompt individuals for standup
  */
-// ontime({
-//     log: true,
-//     cycle: ['10:00:00'],
-// }, function (ot) {
-//     autoStandup.promptIndividualStandup()
-//     ot.done()
-//     return
-// })
-// ontime({
-//     log: true,
-//     cycle: ['12:10:00'],
-// }, function (ot) {
-//     autoStandup.notifyBeforePostingStandup()
-//     ot.done()
-//     return
-// })
-// ontime({
-//     log: true,
-//     cycle: ['14:00:00'],
-// }, function (ot) {
-//     autoStandup.postTeamStandupsToChannel()
-//     ot.done()
-//     return
-// })
-// autoStandup.respondToMessages()
-//Start listening to requests
+ontime({
+    log: true,
+    cycle: ['weekday 10:00:00'],
+}, function (ot) {
+    autoStandup.promptIndividualStandup()
+    ot.done()
+    return
+})
+/**
+ * Notify individuals before postinf standup
+ */
+ontime({
+    log: true,
+    cycle: ['weekday 12:30:00'],
+}, function (ot) {
+    autoStandup.notifyBeforePostingStandup()
+    ot.done()
+    return
+})
+/**
+ * Post team standups
+ */
+ontime({
+    log: true,
+    cycle: ['weekday 14:30:00'],
+}, function (ot) {
+    autoStandup.postTeamStandupsToChannel()
+    ot.done()
+    return
+})
+
 app.listen(process.env.PORT || 7777, function () {
     console.log("[+] app listening for requests")
 })
