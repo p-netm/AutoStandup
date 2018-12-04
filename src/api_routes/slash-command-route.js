@@ -18,7 +18,7 @@ const slackBot = new AutoStandup();
  * Express route to handle post request when the slash command is invoked by the
  * users of the app
  */
-SlashCommandRouter.post("/slashcmd/new", function(req, res) {
+SlashCommandRouter.post("/slashcmd/new", function (req, res) {
   let { text, user_id, trigger_id } = req.body;
   if (signature.isVerified(req)) {
     const dialog = {
@@ -38,7 +38,8 @@ SlashCommandRouter.post("/slashcmd/new", function(req, res) {
             { label: "Kaznet", value: "Kaznet" },
             { label: "Zebra", value: "Zebra" },
             { label: "Ona Data", value: "Ona Data" },
-            { label: "Gisida", value: "Gisida" }
+            { label: "Gisida", value: "Gisida" },
+            { label: "Other", value: "Other" }
           ],
           hint:
             "You can post individual standup or as team. Team standups will be group together"
@@ -61,18 +62,18 @@ SlashCommandRouter.post("/slashcmd/new", function(req, res) {
         }
       ]
     };
-  
+
     switch (text.trim()) {
-      case "unsubscribe":     
+      case "unsubscribe":
         slackBot.checkUser(user_id).then((user) => {
-          if (user === undefined) {                    
+          if (user === undefined) {
             res
               .status(200)
               .send({
                 text: `Hi,<@${user_id}> you have *successfuly* \`unsubscribed\` from the atostandup notification service`
-              }) 
-              slackBot.saveUser(user_id)   
-           
+              })
+            slackBot.saveUser(user_id)
+
           } else {
             res
               .status(200)
@@ -84,23 +85,23 @@ SlashCommandRouter.post("/slashcmd/new", function(req, res) {
         break;
       case "subscribe":
         slackBot.checkUser(user_id).then((user) => {
-            //if user exist we inform he is already subscribed.
-            console.log('user', user)
-            if (user !== undefined) {                    
+          //if user exist we inform he is already subscribed.
+          console.log('user', user)
+          if (user !== undefined) {
             res
-                .status(200)
-                .send({
+              .status(200)
+              .send({
                 text: `Hi,<@${user_id}> you are *subcribed* \`back\` to the atostandup notification service`
-                }) 
-                slackBot.deleteUser(user_id)
-            } else {
-              res
-                .status(200)
-                .send({
+              })
+            slackBot.deleteUser(user_id)
+          } else {
+            res
+              .status(200)
+              .send({
                 text: `Hi,<@${user_id}> you are *already* \`subscribed\` to the atostandup notification service`
-                }) 
-            }
-            
+              })
+          }
+
         });
         break
       case "post":
@@ -111,8 +112,54 @@ SlashCommandRouter.post("/slashcmd/new", function(req, res) {
             res.status(500).end();
           }
         });
+        break;
+      case "help":
+        attachments = [
+          {
+            fallback: "Post standup /standup post",
+            pretext: "You can submit your standup using this",
+            text: "`/standup post`",
+
+          },
+          {
+            fallback: "Unsubscribe from notification standup /standup unsubscribe",
+            pretext: "To unsubscribe from standup notification and prompts",
+            text: "`/standup unsubscribe`",
+          },
+          {
+            fallback: "Subscribe for notifications /standup subscribe",
+            pretext: "You can always subcribe back to get notifications",
+            text: "`/standup subscribe`",
+
+          },
+          {
+            fallback: "Modify standup /standup edit",
+            pretext: "To update your standup",
+            text: "`/standup edit`"
+          },
+          {
+            fallback: "Delete standup /standup remove",
+            pretext: "To delete your standup",
+            text: "`/standup remove`",
+          },
+          {
+            fallback: "Display information standup /standup post",
+            pretext: "To display your standup details. specify team/individual",
+            text: "`/standup show [individual/name_of_team]`",
+          },
+          {
+            fallback: "Show help /standup help",
+            pretext: "To show this content again",
+            text: "`/standup help`",
+          },
+
+        ]
+        slackBot.postMessageToUser(user_id, `*Hi <@${user_id}>, need some help?*`, attachments)
+        res.status(200).send('')
+        break;
       default:
-        
+        res.status(200).send(">>>😞 Sorry I don't recognize that command. type *`/standup help`*  for help. To submit standup use  *`/standup post`*");
+        break
     }
   } else {
     debug("Verification token mismatch");
