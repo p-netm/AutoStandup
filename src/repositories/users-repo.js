@@ -13,7 +13,7 @@ class UserRepository {
         return this.dao.run(sql)
     }
 
-    add(username) {      
+    add(username) {
         const insertStatement = "INSERT INTO users (username) VALUES (?)"
         this.dao.run(insertStatement, [username])
     }
@@ -28,6 +28,10 @@ class UserRepository {
         const deleteStatement = "DELETE FROM users WHERE id = ?"
         return this.dao.run(deleteStatement, [id])
     }
+    deleteByUsername(username) {
+        const deleteByUsernameStatement = "DELETE FROM users WHERE username = ?"
+        return this.dao.get(deleteByUsernameStatement, [username])
+    }
     getById(id) {
         const statement = "SELECT * FROM users WHERE id = ?"
         return this.dao.get(statement, [id])
@@ -37,7 +41,7 @@ class UserRepository {
         return this.dao.get(statement, [username])
     }
     getAllUsers() {
-        const statement = "SELECT * FROM users"
+        const statement = "SELECT  * FROM users"
         return this.dao.all(statement)
     }
 

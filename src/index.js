@@ -46,7 +46,7 @@ app.get('/', (req, res) => {
 AppBootstrap.main()
 
 const autoStandup = new AutoStandup()
-
+autoStandup.notifyBeforePostingStandup()
 /**
  * Prompt individuals for standup
  */
