@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 const AppBootstrap = require("./main");
 const moment = require("moment");
-const today = moment().format("Do MMMM YYYY");
+const today = moment().format("YYYY-MM-DD");
 const token = process.env.SLACK_ACCESS_TOKEN;
 
 const { RTMClient, WebClient, ErrorCode } = require("@slack/client");
@@ -25,7 +25,7 @@ const promptResponse = new Array(
 const reminderResponse = new Array(
     "Hey, submit your daily standup, posting time is `2.30PM`. Don't be left out!",
     "Hi, time runs so fast. Submit your standup before `2.30PM`.",
-    "Hey, in the next *2hrs* team standup will be posted. Submit yours today. ",
+    "Hey, in the next `2hrs` at 2.30PM team standup will be posted. Submit yours today. ",
     "Greetings!, please submit your daily standup. Time for posting is `2.30PM`"
 );
 
@@ -272,7 +272,8 @@ class AutoStandup {
      * Post formatted standups to channel
      */
     postTeamStandupsToChannel() {
-        let standupUpdate = `*📅 Showing Ona Standup Updates On ${today}*\n\n`;
+        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY")
+        let standupUpdate = `*📅 Showing Ona Standup Updates On ${todayFormatted}*\n\n`;
         AppBootstrap.userStandupRepo
             .getByDatePosted(today)
             .then(data => {
@@ -280,7 +281,7 @@ class AutoStandup {
 
                 data.forEach((item, index) => {
                     let attachment = {
-                        color: "#cfcfcc",
+                        color: "#dfdfdf",
                         title: `<@${item.username}>`,
                         fallback:
                             "Sorry Could not display standups in this type of device. Check in desktop browser",
@@ -342,13 +343,14 @@ class AutoStandup {
                             );
                         }
                     });
-                }else{
-                     web.channels.list().then(res => {
+                } else {
+                    web.channels.list().then(res => {
+                        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY")
                         const channel = res.channels.find(c => c.is_member);
                         if (channel) {
                             web.chat
                                 .postMessage({
-                                    text: `*📅 Nothing to show. No standup updates for ${today}*`,                                 
+                                    text: `*📅 Nothing to show. No standup updates for ${todayFormatted}*`,
                                     channel: channel.id
                                 })
                                 .then(msg =>
@@ -362,15 +364,16 @@ class AutoStandup {
                                 "This bot does not belong to any channel, invite it to at least one and try again"
                             );
                         }
-                    }); 
+                    });
                 }
             });
     }
 
     postIndividualStandupToChannel(item) {
-        let standupUpdate = `🔔 \`Update\` *New standup update posted ${today}*\n\n`;
+        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY")
+        let standupUpdate = `🔔 \`Update\` *New standup update posted ${todayFormatted}*\n\n`;
         let attachment = {
-            color: "#2768BB",
+            color: "#FFA300",
             title: `<@${item.username}>`,
             fallback:
                 "Sorry Could not display standups in this type of device. Check in desktop browser",
@@ -419,6 +422,25 @@ class AutoStandup {
                 );
             }
         });
+    }
+
+    getHistory(username, daysToSubtract) {
+        let momentStartDate = moment().subtract(daysToSubtract, 'days').calendar();
+        let startDate = moment(momentStartDate, "L").format("YYYY-MM-DD")
+        console.log("Fetching history between " + startDate + " and " + today)
+        return AppBootstrap.userStandupRepo.getHistory(username, startDate, today)
+            .then((res) => {
+                return Promise.resolve(res)
+            })
+            .catch(error => {
+                if (error.code === ErrorCode.PlatformError) {
+                    console.log("error message", error.message);
+                    console.log("error message", error.data);
+                } else {
+                    console.error;
+                }
+                return Promise.reject(error);
+            })
     }
 
     /**

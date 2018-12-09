@@ -48,6 +48,10 @@ class UserStandup {
         const statement = "SELECT * FROM user_standups WHERE username = ?"
         return this.dao.all(statement, [username])
     }
+    getHistory(username,startDate, endDate) {
+        const statement = "SELECT * FROM user_standups WHERE username = ? AND DATE(date_posted) BETWEEN ? AND ? ORDER BY date_posted DESC"
+        return this.dao.all(statement, [username,startDate,endDate])
+    }
     getByTeam(team,datePosted) {
         const statement = "SELECT * FROM user_standups WHERE team = ? AND date_posted = ? AND status = 0 ORDER BY team ASC"
         return this.dao.all(statement, [team,datePosted])
