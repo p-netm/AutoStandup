@@ -14,6 +14,34 @@ const moment = require("moment");
 const AutoStandup = require("../slack-bot");
 const slackBot = new AutoStandup();
 
+function formatAttachements(content) {
+  if (content.length > 0) {
+
+    let attachments = []
+
+    content.forEach(item => {
+     let theDate = moment(item.date_posted,"YYYY-MM-DD").format("dddd, MMM Do YYYY")
+      let attachment = {
+        color: "#E1B983",
+        text: `*\`${theDate}\`*`,
+        fallback:
+          "Sorry Could not display standups in this type of device. Check in desktop browser",
+        fields: [
+          {
+            title: "What you did on this day",
+            value: `${item.standup_today}`,
+            short: false
+          }
+        ],
+        footer: `You posted as ${item.team === "None" ? "Individual" : item.team}`
+      };
+      attachments.push(attachment);
+    });
+    return attachments
+
+  }
+}
+
 /**
  * Express route to handle post request when the slash command is invoked by the
  * users of the app
@@ -25,7 +53,7 @@ SlashCommandRouter.post("/slashcmd/new", function (req, res) {
       title: "Submit standup update",
       callback_id: "submit-standup",
       submit_label: "Submit",
-      state: moment().format("Do MMMM YYYY"),
+      state: moment().format("YYYY-MM-DD"),
       elements: [
         {
           label: "Post as",
@@ -49,21 +77,43 @@ SlashCommandRouter.post("/slashcmd/new", function (req, res) {
           type: "textarea",
           name: "standup_today",
           optional: false,
-          hint:
-            "* Provide updates on what you are working on today in separate lines with - prefix. e.g - Add unit tests to Kaznet's playbook"
+          placeholder: "e.g - Add unit tests to Kaznet's playbook"
         },
         {
           label: "Previously/Yesterday",
           type: "textarea",
           name: "standup_previous",
           optional: true,
-          hint:
-            "Provide updates on what you did (previously/yesterday) in separate lines with - prefix. e.g - Deployed OpenMRS and OpenSRP servers"
+          placeholder: "e.g - Deployed OpenMRS and OpenSRP servers"
         }
       ]
     };
 
     switch (text.trim()) {
+      case "week-history":
+        slackBot.getHistory(user_id, 7)
+          .then((data) => {
+            if (data !== undefined && data.length > 0) {          
+              slackBot.postMessageToUser(user_id, "*📅 Showing your standup updates for the past week*",
+                formatAttachements(data))
+            } else {
+              slackBot.postMessageToUser(user_id, `Hi <@${user_id}>, You currently have no standup updates.`, [])
+            }
+            res.status(200).send("Request received!")
+          })
+        break
+      case "month-history":
+        slackBot.getHistory(user_id, 30)
+          .then((data) => {
+            if (data !== undefined && data.length > 0) {            
+              slackBot.postMessageToUser(user_id, "*📅 Showing your standup updates for the past month*",
+                formatAttachements(data))
+            } else {
+              slackBot.postMessageToUser(user_id, `Hi <@${user_id}>, You currently have no standup updates in your history`, [])
+            }
+            res.status(200).send("Request received!")
+          })
+        break
       case "unsubscribe":
         slackBot.checkUser(user_id).then((user) => {
           if (user === undefined) {
@@ -133,6 +183,16 @@ SlashCommandRouter.post("/slashcmd/new", function (req, res) {
 
           },
           {
+            fallback: "Get weekly standups /standup week-history",
+            pretext: "To get your standup submission for the past week",
+            text: "`/standup week-history`"
+          },
+          {
+            fallback: "Get monthly standups /standup month-history",
+            pretext: "To get your standup submission for the past month",
+            text: "`/standup month-history`",
+          },
+          {
             fallback: "Modify standup /standup edit",
             pretext: "To update your standup",
             text: "`/standup edit`"
@@ -158,7 +218,7 @@ SlashCommandRouter.post("/slashcmd/new", function (req, res) {
         res.status(200).send('')
         break;
       default:
-        res.status(200).send(">>>😞 Sorry I don't recognize that command. type *`/standup help`*  for help. To submit standup use  *`/standup post`*");
+        res.status(200).send("😞 Sorry I don't recognize that command. type *`/standup help`*  for help. To submit standup use  *`/standup post`*");
         break
     }
   } else {

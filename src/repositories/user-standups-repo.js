@@ -31,9 +31,9 @@ class UserStandup {
         `
         return this.dao.run(updateStatement, [username, standup_today, team, standup_previous, date_posted, status, id])
     }
-    updateStatus(id) {
-        const updateStatement = `UPDATE user_standups SET  status = 1 WHERE id = ?`
-        return this.dao.run(updateStatement[id])
+    updateStatus(date) {
+        const updateStatement = `UPDATE user_standups SET  status = 1 WHERE id > 1 AND date_posted ?`
+        return this.dao.run(updateStatement[date])
     }
 
     delete(id) {
@@ -48,6 +48,10 @@ class UserStandup {
         const statement = "SELECT * FROM user_standups WHERE username = ?"
         return this.dao.all(statement, [username])
     }
+    getHistory(username,startDate, endDate) {
+        const statement = "SELECT * FROM user_standups WHERE username = ? AND DATE(date_posted) BETWEEN ? AND ? ORDER BY date_posted DESC"
+        return this.dao.all(statement, [username,startDate,endDate])
+    }
     getByTeam(team,datePosted) {
         const statement = "SELECT * FROM user_standups WHERE team = ? AND date_posted = ? AND status = 0 ORDER BY team ASC"
         return this.dao.all(statement, [team,datePosted])
@@ -59,7 +63,11 @@ class UserStandup {
     getByDatePosted(datePosted) {
         const statement = "SELECT * FROM user_standups WHERE date_posted = ? AND status = 0 ORDER BY team ASC"
         return this.dao.all(statement, [datePosted])
-    }    
+    }  
+    getUsersWhoSubmitedByDate(datePosted) {
+        const statement = "SELECT DISTINCT username FROM user_standups WHERE date_posted = ?"
+        return this.dao.all(statement, [datePosted])
+    }   
     getAllUserStandups() {
         const statement = "SELECT * FROM users_standups  WHERE team IS NOT NULL ORDER BY team"
         return this.dao.all(statement)

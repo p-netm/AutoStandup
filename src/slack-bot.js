@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 const AppBootstrap = require("./main");
 const moment = require("moment");
-const today = moment().format("Do MMMM YYYY");
+const today = moment().format("YYYY-MM-DD");
 const token = process.env.SLACK_ACCESS_TOKEN;
 
 const { RTMClient, WebClient, ErrorCode } = require("@slack/client");
@@ -17,15 +17,25 @@ const web = new WebClient(token);
 rtm.start();
 
 const promptResponse = new Array(
-    "Hey, submit your daily standup. Use `/standup post` command",
-    "Hi, another day to submit your standup. Use `/standup post` command",
-    "Hey, time for standup update.Use `/standup post` command",
-    "Greetings!, please submit your daily standup. Use `/standup post` command"
+    "Hey, submit your daily standup. Use `/standup post` command to submit standup; for help  `/standup help`",
+    "Hi, another day to submit your standup. Use `/standup post` command to submit standup; for help  `/standup help`",
+    "Hey, time for standup update. Use `/standup post` command to submit standup; for help  `/standup help`",
+    "Greetings!, please submit your daily standup. Use `/standup post` command to submit standup; for help  `/standup help`"
+);
+const reminderResponse = new Array(
+    "Hey, submit your daily standup, posting time is `2.30PM`. Don't be left out!",
+    "Hi, time runs so fast. Submit your standup before `2.30PM`.",
+    "Hey, in the next `2hrs` at 2.30PM team standup will be posted. Submit yours today. ",
+    "Greetings!, please submit your daily standup. Time for posting is `2.30PM`"
 );
 
 function pickRandomPromptMsg() {
     var pos = Math.floor(Math.random() * (promptResponse.length - 0) + 0);
     return promptResponse[pos];
+}
+function pickRandomReminderMsg() {
+    var pos = Math.floor(Math.random() * (reminderResponse.length - 0) + 0);
+    return reminderResponse[pos];
 }
 
 class AutoStandup {
@@ -93,7 +103,8 @@ class AutoStandup {
     saveStandup(standupDetails) {
         AppBootstrap.userStandupRepo.add(standupDetails);
     }
-    /**Saves user to db
+    /**
+     * get all users who unsubscribed
      */
     getUsers() {
         return AppBootstrap.userRepo
@@ -186,30 +197,74 @@ class AutoStandup {
         });
     }
 
+
     /**
-     * Notify users 30 minutes before posting standup on channel
+     * Get those who have submitted. If someone is not in this list then
+     * they have not submitted. Proceed to send the notification to these late submitters.
+     * Only if they are subscribed to notification service otherwise ignore them
+     */
+    getLateSubmitters() {
+        return AppBootstrap.userStandupRepo
+            .getUsersWhoSubmitedByDate(today)
+            .then(res => {
+                let earlySubmitters = []
+                if (res.length > 0) {
+                    res.forEach((user) => {
+                        earlySubmitters.push(user.username)
+                    })
+                }
+                return Promise.resolve(earlySubmitters);
+            })
+            .then(submitters => {
+                return this.getChannelMembers()
+                    .then(res => {
+                        let allChannelUsers = res.members;
+                        allChannelUsers = allChannelUsers.filter(
+                            item => !submitters.includes(item)
+                        );
+                        return Promise.resolve(allChannelUsers);
+                    })
+            })
+            .catch(error => {
+                if (error.code === ErrorCode.PlatformError) {
+                    console.log("error message", error.message);
+                    console.log("error message", error.data);
+                } else {
+                    console.error;
+                }
+                return Promise.reject(error);
+            })
+    }
+
+    /**
+     * Notify users 180 minutes before posting standup on channel
      */
     notifyBeforePostingStandup() {
         let rmUserArr = [];
         this.getUsers().then(res => {
-            res.forEach(res => {
-                rmUserArr.push(res.username);
-            });
+            if (res.length > 0) {
+                res.forEach(res => {
+                    rmUserArr.push(res.username);
+                });
+                console.log("Unsubscribed users = " + rmUserArr)
+            }
         });
-        this.getChannelMembers().then(res => {
-            let allChannelUsers = res.members;
-            allChannelUsers = allChannelUsers.filter(
-                item => !rmUserArr.includes(item)
-            );
-
-            allChannelUsers.forEach(user => {
-                this.sendMessageToUser(
-                    user,
-                    ">>>`Reminder` Hello *<@" +
-                    user +
-                    ">* , submit your standup update. Team standups are posted on the channel on weekdays at `2.30PM`. Don't be left out!"
+        this.getLateSubmitters().then(res => {
+            let lateSubmitters
+            if (res.length > 0) {
+                lateSubmitters = res
+                console.log("Late submitters before filter = " + lateSubmitters)
+                lateSubmitters = lateSubmitters.filter(
+                    item => !rmUserArr.includes(item)
                 );
-            });
+            }
+            if (lateSubmitters.length > 0) {
+                res.forEach(user => {
+                    this.sendMessageToUser(user, pickRandomReminderMsg());
+                });
+            }
+            console.log("Late submitters after filter = " + lateSubmitters)
+
         });
     }
 
@@ -217,7 +272,8 @@ class AutoStandup {
      * Post formatted standups to channel
      */
     postTeamStandupsToChannel() {
-        let standupUpdate = `*📅 Showing Ona Standup Updates On ${today}*\n\n`;
+        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY")
+        let standupUpdate = `*📅 Showing Ona Standup Updates On ${todayFormatted}*\n\n`;
         AppBootstrap.userStandupRepo
             .getByDatePosted(today)
             .then(data => {
@@ -225,7 +281,7 @@ class AutoStandup {
 
                 data.forEach((item, index) => {
                     let attachment = {
-                        color: "#cfcfcc",
+                        color: "#dfdfdf",
                         title: `<@${item.username}>`,
                         fallback:
                             "Sorry Could not display standups in this type of device. Check in desktop browser",
@@ -265,34 +321,59 @@ class AutoStandup {
                 return Promise.resolve(attachments);
             })
             .then(allAttachments => {
-                web.channels.list().then(res => {
-                    const channel = res.channels.find(c => c.is_member);
-                    if (channel) {
-                        web.chat
-                            .postMessage({
-                                text: standupUpdate,
-                                attachments: allAttachments,
-                                channel: channel.id
-                            })
-                            .then(msg =>
-                                console.log(
-                                    `Message sent to channel ${channel.name} with ts:${msg.ts}`
+                if (allAttachments.length > 0) {
+                    web.channels.list().then(res => {
+                        const channel = res.channels.find(c => c.is_member);
+                        if (channel) {
+                            web.chat
+                                .postMessage({
+                                    text: standupUpdate,
+                                    attachments: allAttachments,
+                                    channel: channel.id
+                                })
+                                .then(msg =>
+                                    console.log(
+                                        `Message sent to channel ${channel.name} with ts:${msg.ts}`
+                                    )
                                 )
-                            )
-                            .catch(console.error);
-                    } else {
-                        console.log(
-                            "This bot does not belong to any channel, invite it to at least one and try again"
-                        );
-                    }
-                });
+                                .catch(console.error);
+                        } else {
+                            console.log(
+                                "This bot does not belong to any channel, invite it to at least one and try again"
+                            );
+                        }
+                    });
+                } else {
+                    web.channels.list().then(res => {
+                        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY")
+                        const channel = res.channels.find(c => c.is_member);
+                        if (channel) {
+                            web.chat
+                                .postMessage({
+                                    text: `*📅 Nothing to show. No standup updates for ${todayFormatted}*`,
+                                    channel: channel.id
+                                })
+                                .then(msg =>
+                                    console.log(
+                                        `Message sent to channel ${channel.name} with ts:${msg.ts}`
+                                    )
+                                )
+                                .catch(console.error);
+                        } else {
+                            console.log(
+                                "This bot does not belong to any channel, invite it to at least one and try again"
+                            );
+                        }
+                    });
+                }
             });
     }
 
     postIndividualStandupToChannel(item) {
-        let standupUpdate = `🔔 \`Update\` *New standup update posted ${today}*\n\n`;
+        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY")
+        let standupUpdate = `🔔 \`Update\` *New standup update posted ${todayFormatted}*\n\n`;
         let attachment = {
-            color: "#2768BB",
+            color: "#FFA300",
             title: `<@${item.username}>`,
             fallback:
                 "Sorry Could not display standups in this type of device. Check in desktop browser",
@@ -341,6 +422,25 @@ class AutoStandup {
                 );
             }
         });
+    }
+
+    getHistory(username, daysToSubtract) {
+        let momentStartDate = moment().subtract(daysToSubtract, 'days').calendar();
+        let startDate = moment(momentStartDate, "L").format("YYYY-MM-DD")
+        console.log("Fetching history between " + startDate + " and " + today)
+        return AppBootstrap.userStandupRepo.getHistory(username, startDate, today)
+            .then((res) => {
+                return Promise.resolve(res)
+            })
+            .catch(error => {
+                if (error.code === ErrorCode.PlatformError) {
+                    console.log("error message", error.message);
+                    console.log("error message", error.data);
+                } else {
+                    console.error;
+                }
+                return Promise.reject(error);
+            })
     }
 
     /**
