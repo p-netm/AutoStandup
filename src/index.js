@@ -62,7 +62,7 @@ ontime({
  */
 ontime({
     log: true,
-    cycle: ['weekday 12:30:00'],
+    cycle: ['weekday 13:00:00'],
 }, function (ot) {
     autoStandup.notifyBeforePostingStandup()
     ot.done()

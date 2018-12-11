@@ -257,13 +257,13 @@ class AutoStandup {
                 lateSubmitters = lateSubmitters.filter(
                     item => !rmUserArr.includes(item)
                 );
+                console.log("Late submitters after filter = " + lateSubmitters)
+                if (lateSubmitters.length > 0) {
+                    res.forEach(user => {
+                        this.sendMessageToUser(user, pickRandomReminderMsg());
+                    });
+                }
             }
-            if (lateSubmitters.length > 0) {
-                res.forEach(user => {
-                    this.sendMessageToUser(user, pickRandomReminderMsg());
-                });
-            }
-            console.log("Late submitters after filter = " + lateSubmitters)
 
         });
     }
