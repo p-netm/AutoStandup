@@ -1,9 +1,11 @@
-BotSpace
-=======
+AUTOSTANDUP
+===========
 
-This simple application is an example of how to package a Node.js application. It's intended to generates daily standups reminders and notifications that aid one know what each person on your team is working on.
+This is a simple application to demonstrate how to build a chatbot using Slack API with Nodejs . 
+The purpose of the app is to prompt daily standups from team members and post what each member is working on.
 
-Each weekday, the bot posts a Standup Time reminder with questions about what they're working on. Each team member can then reply then or get back to it as soon as they can.
+The bot will prompt users for standups every working day and remind those who haven't submitted before posting to the standup's channel. 
+A person can opt to unsubscribe from the notification service or subscribe back when desired.
 
 Setup
 -----
@@ -47,4 +49,4 @@ npm start
 ```
 
 
-You should now be able to access it via 127.0.0.1:8000
+You should now be able to access it via 0:7777

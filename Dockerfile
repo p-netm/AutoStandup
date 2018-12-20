@@ -11,7 +11,7 @@ COPY package*.json ./
 
 RUN npm install
 
-EXPOSE 8080
+EXPOSE 7777
 
 # Define environment variable
 ENV NAME .env
