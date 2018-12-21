@@ -19,6 +19,7 @@ To package and run this application, you'll need to:
 
 
 * [Install and configure npm globally on your machine](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+* [Install and configure Docker globally on your machine](https://docs.docker.com/compose/install/)
 * Clone this repository:
 
       $ git clone https://github.com/kahummer/AutoStandup.git
@@ -34,17 +35,8 @@ Run the following commands from the root directory of the project.
 
 ```
 
-npm install
+docker-compose up
 
 ```
 
-
-```
-
-npm start
-
-```
-
-
-
-You should now be able to access it via 127.0.0.1:7777
+The Docker container will then install all the necessary packages required for the project and make the application accessible via `127.0.0.1:7777`
