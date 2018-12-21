@@ -49,4 +49,4 @@ npm start
 ```
 
 
-You should now be able to access it via 0:7777
+You should now be able to access it via 127.0.0.1:7777
