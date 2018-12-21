@@ -9,7 +9,8 @@ COPY . /app
 # Install app dependencies
 COPY package*.json ./
 
-RUN npm install
+
+RUN npm install --quiet
 
 EXPOSE 7777
 
