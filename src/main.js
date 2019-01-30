@@ -1,7 +1,7 @@
 const AppDao = require("./dao")
-const UserRepository = require("./repositories/users-repo")
-const TeamRepository = require("./repositories/teams-repo")
-const UserStandupsRepository = require("./repositories/user-standups-repo")
+const UserRepository = require("./repositories/users")
+const TeamRepository = require("./repositories/teams")
+const UserStandupsRepository = require("./repositories/user-standups")
 
 const dao = new AppDao(process.env.DB_PATH)
 const userRepo = new UserRepository(dao)

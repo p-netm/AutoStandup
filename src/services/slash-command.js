@@ -9,9 +9,9 @@ if (process.env.NODE_ENV !== "production") {
 const express = require("express");
 const SlashCommandRouter = express.Router();
 const debug = require("debug")("onaautostandup:slash-command-route");
-const signature = require("../verify-signature");
+const signature = require("../routes/guards/verify-signature");
 const moment = require("moment");
-const AutoStandup = require("../slack-bot");
+const AutoStandup = require("../routes/slack");
 const slackBot = new AutoStandup();
 
 function formatAttachements(content) {

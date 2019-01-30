@@ -6,7 +6,7 @@ if (process.env.NODE_ENV !== "production") {
         throw result.error;
     }
 }
-const AppBootstrap = require("./main");
+const AppBootstrap = require("../main");
 const moment = require("moment");
 const today = moment().format("YYYY-MM-DD");
 const token = process.env.SLACK_ACCESS_TOKEN;
@@ -16,29 +16,25 @@ const rtm = new RTMClient(token);
 const web = new WebClient(token);
 rtm.start();
 
-const promptResponse = new Array(
-    "Hey, submit your daily standup. Use `/standup post` command to submit standup; for help  `/standup help`",
+const promptResponse = ["Hey, submit your daily standup. Use `/standup post` command to submit standup; for help  `/standup help`",
     "Hi, another day to submit your standup. Use `/standup post` command to submit standup; for help  `/standup help`",
     "Hey, time for standup update. Use `/standup post` command to submit standup; for help  `/standup help`",
-    "Greetings!, please submit your daily standup. Use `/standup post` command to submit standup; for help  `/standup help`"
-);
-const reminderResponse = new Array(
-    "Hey, submit your daily standup, posting time is `2.30PM`. Don't be left out!",
+    "Greetings!, please submit your daily standup. Use `/standup post` command to submit standup; for help  `/standup help`"];
+const reminderResponse = ["Hey, submit your daily standup, posting time is `2.30PM`. Don't be left out!",
     "Hi, time runs so fast. Submit your standup before `2.30PM`.",
     "Hey, in the next `2hrs` at 2.30PM team standup will be posted. Submit yours today. ",
-    "Greetings!, please submit your daily standup. Time for posting is `2.30PM`"
-);
+    "Greetings!, please submit your daily standup. Time for posting is `2.30PM`"];
 
 function pickRandomPromptMsg() {
-    var pos = Math.floor(Math.random() * (promptResponse.length - 0) + 0);
+    let pos = Math.floor(Math.random() * (promptResponse.length));
     return promptResponse[pos];
 }
 function pickRandomReminderMsg() {
-    var pos = Math.floor(Math.random() * (reminderResponse.length - 0) + 0);
+    let pos = Math.floor(Math.random() * (reminderResponse.length));
     return reminderResponse[pos];
 }
 
-class AutoStandup {
+class AutoStandUp {
     /***
      *  Get conversation id for user with id [userId]
      *  Post message to the user
@@ -67,7 +63,7 @@ class AutoStandup {
         web.conversations
             .list({ exclude_archived: true, types: "im" })
             .then(res => {
-                const foundUser = res.channels.find(u => u.user === userId)
+                const foundUser = res.channels.find(u => u.user === userId);
                 if (foundUser) {
                     web.chat
                         .postMessage({
@@ -207,7 +203,7 @@ class AutoStandup {
         return AppBootstrap.userStandupRepo
             .getUsersWhoSubmitedByDate(today)
             .then(res => {
-                let earlySubmitters = []
+                let earlySubmitters = [];
                 if (res.length > 0) {
                     res.forEach((user) => {
                         earlySubmitters.push(user.username)
@@ -250,14 +246,14 @@ class AutoStandup {
             }
         });
         this.getLateSubmitters().then(res => {
-            let lateSubmitters
+            let lateSubmitters;
             if (res.length > 0) {
-                lateSubmitters = res
-                console.log("Late submitters before filter = " + lateSubmitters)
+                lateSubmitters = res;
+                console.log("Late submitters before filter = " + lateSubmitters);
                 lateSubmitters = lateSubmitters.filter(
                     item => !rmUserArr.includes(item)
                 );
-                console.log("Late submitters after filter = " + lateSubmitters)
+                console.log("Late submitters after filter = " + lateSubmitters);
                 if (lateSubmitters.length > 0) {
                     res.forEach(user => {
                         this.sendMessageToUser(user, pickRandomReminderMsg());
@@ -272,7 +268,7 @@ class AutoStandup {
      * Post formatted standups to channel
      */
     postTeamStandupsToChannel() {
-        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY")
+        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
         let standupUpdate = `*📅 Showing Ona Standup Updates On ${todayFormatted}*\n\n`;
         AppBootstrap.userStandupRepo
             .getByDatePosted(today)
@@ -345,7 +341,7 @@ class AutoStandup {
                     });
                 } else {
                     web.channels.list().then(res => {
-                        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY")
+                        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
                         const channel = res.channels.find(c => c.is_member);
                         if (channel) {
                             web.chat
@@ -370,7 +366,7 @@ class AutoStandup {
     }
 
     postIndividualStandupToChannel(item) {
-        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY")
+        let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
         let standupUpdate = `🔔 \`Update\` *New standup update posted ${todayFormatted}*\n\n`;
         let attachment = {
             color: "#FFA300",
@@ -426,8 +422,8 @@ class AutoStandup {
 
     getHistory(username, daysToSubtract) {
         let momentStartDate = moment().subtract(daysToSubtract, 'days').calendar();
-        let startDate = moment(momentStartDate, "L").format("YYYY-MM-DD")
-        console.log("Fetching history between " + startDate + " and " + today)
+        let startDate = moment(momentStartDate, "L").format("YYYY-MM-DD");
+        console.log("Fetching history between " + startDate + " and " + today);
         return AppBootstrap.userStandupRepo.getHistory(username, startDate, today)
             .then((res) => {
                 return Promise.resolve(res)
@@ -472,4 +468,4 @@ class AutoStandup {
     }
 }
 
-module.exports = AutoStandup;
+module.exports = AutoStandUp;
