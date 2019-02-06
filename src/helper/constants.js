@@ -20,8 +20,9 @@ constants.dialog = {
             label: "Post as",
             type: "select",
             name: "team",
+            placeholder: "Select team or post yours alone",
             options: [
-                {label: "Individual", value: "None"},
+                {label: "My own", value: "None"},
                 {label: "OpenSRP", value: "Open SRP"},
                 {label: "Canopy", value: "Canopy"},
                 {label: "Kaznet", value: "Kaznet"},
@@ -29,9 +30,7 @@ constants.dialog = {
                 {label: "Ona Data", value: "Ona Data"},
                 {label: "Gisida", value: "Gisida"},
                 {label: "Other", value: "Other"}
-            ],
-            hint:
-                "You can post individual standup or as team. Team standups will be group together"
+            ]
         },
         {
             label: "Today's update",

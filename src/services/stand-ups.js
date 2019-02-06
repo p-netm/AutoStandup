@@ -8,7 +8,6 @@ if (process.env.NODE_ENV !== "production") {
     }
 }
 const appBootstrap = require("../main");
-const constants = require("../helper/constants");
 const commons = require("../helper/commons");
 const usersService = require("../services/users");
 const moment = require("moment");
@@ -113,7 +112,7 @@ function saveStandUp(standUpDetails) {
  */
 function promptIndividualStandup() {
     let rmUserArr = [];
-    this.getUsers().then(res => {
+    usersService.getUsers().then(res => {
         res.forEach(res => {
             rmUserArr.push(res.username);
         });
@@ -135,7 +134,7 @@ function promptIndividualStandup() {
  */
 function notifyBeforePostingStandup() {
     let rmUserArr = [];
-    this.getUsers().then(res => {
+    usersService.getUsers().then(res => {
         if (res.length > 0) {
             res.forEach(res => {
                 rmUserArr.push(res.username);

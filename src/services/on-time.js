@@ -3,33 +3,49 @@ const standUpService = require("../services/stand-ups");
 /**
  * Prompt individuals for standup
  */
-onTime({
-    log: true,
-    cycle: ['weekday 10:00:00'],
-}, function (ot) {
-    standUpService.promptIndividualStandup();
-    ot.done();
+let service = {};
+service.runSchedules =runSchedules;
+module.exports = service;
 
-});
+function runSchedules() {
+    scheduleIndividualPrompt();
+    scheduleNotifier();
+    schedulePostingTeamStandup();
+}
+
+function scheduleIndividualPrompt() {
+    onTime({
+        log: true,
+        cycle: ['weekday 01:20:00'],
+    }, function (ot) {
+        standUpService.promptIndividualStandup();
+        ot.done();
+
+    });
+}
 /**
  * Notify individuals before postinf standup
  */
-onTime({
-    log: true,
-    cycle: ['weekday 12:30:00'],
-}, function (ot) {
-    standUpService.notifyBeforePostingStandup();
-    ot.done();
+function scheduleNotifier() {
+    onTime({
+        log: true,
+        cycle: ['weekday 01:21:00'],
+    }, function (ot) {
+        standUpService.notifyBeforePostingStandup();
+        ot.done();
 
-});
+    });
+}
 /**
  * Post team standups
  */
-onTime({
-    log: true,
-    cycle: ['weekday 14:30:00'],
-}, function (ot) {
-    standUpService.postTeamStandupsToChannel();
-    ot.done();
+function schedulePostingTeamStandup() {
+    onTime({
+        log: true,
+        cycle: ['weekday 14:30:00'],
+    }, function (ot) {
+        standUpService.postTeamStandupsToChannel();
+        ot.done();
 
-});
+    });
+}

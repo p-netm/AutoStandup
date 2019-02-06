@@ -10,6 +10,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const appBootstrap = require("./src/main");
+const onTimeService = require("./src/services/on-time");
 const debug = require("debug")("onaautostandup:index");
 const api = require('./src/routes/api');
 const app = express();
@@ -39,6 +40,7 @@ app.get('/', (req, res) => {
 });
 
 appBootstrap.main();
+onTimeService.runSchedules();
 
 app.listen(process.env.PORT || 7777, function () {
     console.log("[+] app listening for requests")

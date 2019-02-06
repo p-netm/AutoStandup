@@ -1,5 +1,4 @@
 const express = require('express');
-const empty = require('is-empty');
 const router = express.Router();
 
 const apiGuard = require('./guards/verify-signature');
@@ -26,9 +25,9 @@ function openDialog(request, response) {
 
         if (team === "None") {
             standUpDetails.status = 1;
-            standUpService.postIndividualStandupToChannel(body)
-                .then((success) => {
-                    response.status(200).json({"Success worked well": success});
+            standUpService.postIndividualStandupToChannel(standUpDetails)
+                .then(() => {
+                    response.status(200).json({});
                 })
                 .catch((error) => {
                     response.status(400).send({"Error Occurred": error});
@@ -37,11 +36,12 @@ function openDialog(request, response) {
         } else {
             standUpDetails.status = 0;
             standUpService.saveStandUp(standUpDetails);
+            response.status(200).json({});
         }
 
         standUpService.sendMessageToUser(body.user.id, commons.pickRandomResponse())
-            .then((success) => {
-                response.status(200).json({"Success worked well": success});
+            .then(() => {
+                response.status(200).json({});
             })
             .catch((error) => {
                 response.status(400).send({"Error Occurred": error});
@@ -65,8 +65,8 @@ function getDialog(request, response) {
 function doSlashCommand(request, response) {
     if (apiGuard.isVerified(request)) {
         slashCommandService.runSlashCommand(request, response)
-            .then(success => {
-                response.status(200).json({"Success worked well": success});
+            .then(() => {
+                response.status(200).send("")
             })
             .catch(error => {
                 response.status(400).send({"Error Occurred": error});

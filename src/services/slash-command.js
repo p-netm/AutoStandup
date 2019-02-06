@@ -9,9 +9,9 @@ if (process.env.NODE_ENV !== "production") {
 
 const Q = require("q");
 const constants = require("../helper/constants");
-const commons = require("../helper/commons");
 const usersService = require("../services/users");
 const standUpService = require("../services/stand-ups");
+const moment = require("moment");
 
 let service = {};
 service.runSlashCommand = runSlashCommand;
