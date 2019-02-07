@@ -77,24 +77,31 @@ function runSlashCommand(request, response) {
             break;
         case constants.unsubscribe:
             usersService.checkUser(user_id).then((user) => {
+                let text = "";
                 if (user === undefined) {
-                    deferred.resolve({text: `Hi,<@${user_id}> you have *successfuly* \`unsubscribed\` from the atostandup notification service`});
+                    text = `Hi,<@${user_id}> you have *successfully* \`unsubscribed\` from the autostandup notification service`;
+                    deferred.resolve(constants.requestReceived);
                     usersService.saveUser(user_id)
 
                 } else {
-                    deferred.resolve({text: `Hi,<@${user_id}> you have *already* \`unsubscribed\` from the atostandup notification service`})
+                    text = `Hi,<@${user_id}> you have *already* \`unsubscribed\` from the autostandup notification service`;
+                    deferred.resolve(constants.requestReceived)
                 }
+                standUpService.sendMessageToUser(user_id, text);
             });
             break;
         case constants.subscribe:
             usersService.checkUser(user_id).then((user) => {
+                let text = "";
                 if (user !== undefined) {
-                    deferred.resolve({text: `Hi,<@${user_id}> you are *subcribed* \`back\` to the atostandup notification service`});
+                    text = `Hi,<@${user_id}> you are *subcribed* \`back\` to the autostandup notification service`;
+                    deferred.resolve(constants.requestReceived);
                     usersService.deleteUser(user_id)
                 } else {
-                    deferred.resolve({text: `Hi,<@${user_id}> you are *already* \`subscribed\` to the atostandup notification service`})
+                    text = `Hi,<@${user_id}> you are *already* \`subscribed\` to the autostandup notification service`;
+                    deferred.resolve(constants.requestReceived)
                 }
-
+                standUpService.sendMessageToUser(user_id, text);
             });
             break;
         case constants.post:
@@ -109,10 +116,11 @@ function runSlashCommand(request, response) {
             break;
         case constants.help:
             standUpService.postMessageToUser(user_id, `*Hi <@${user_id}>, need some help?*`, constants.attachments);
-            deferred.resolve("");
+            deferred.resolve(constants.requestReceived);
             break;
         default:
-            deferred.resolve("😞 Sorry I don't recognize that command. type *`/standup help`*  for help. To submit standup use  *`/standup post`*");
+            standUpService.sendMessageToUser(user_id, "😞 Sorry I don't recognize that command. type *`/standup help`*  for help. To submit standup use  *`/standup post`*");
+            deferred.resolve(constants.requestReceived);
             break
     }
 

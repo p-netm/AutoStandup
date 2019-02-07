@@ -16,7 +16,7 @@ function runSchedules() {
 function scheduleIndividualPrompt() {
     onTime({
         log: true,
-        cycle: ['weekday 01:20:00'],
+        cycle: ['weekday 10:30:00'],
     }, function (ot) {
         standUpService.promptIndividualStandup();
         ot.done();
@@ -29,7 +29,7 @@ function scheduleIndividualPrompt() {
 function scheduleNotifier() {
     onTime({
         log: true,
-        cycle: ['weekday 01:21:00'],
+        cycle: ['weekday 12:30:00'],
     }, function (ot) {
         standUpService.notifyBeforePostingStandup();
         ot.done();
