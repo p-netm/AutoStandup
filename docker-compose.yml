@@ -3,4 +3,8 @@ services:
   web:
     build: .
     ports:
-     - "7777:7777"    
+     - "7777:7777"
+    volumes: 
+    - db:/opt/sqlite/db
+volumes:
+  db:
