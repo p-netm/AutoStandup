@@ -1,5 +1,3 @@
-const standUpService = require("./src/services/stand-ups");
-
 if (process.env.NODE_ENV !== 'production') {
     const dotEnv = require('dotenv');//Configure environmental variables
     const result = dotEnv.config();
@@ -42,8 +40,7 @@ app.get('/', (req, res) => {
 });
 
 appBootstrap.main();
-//onTimeService.runSchedules();
-standUpService.notifyBeforePostingStandup();
+onTimeService.runSchedules();
 
 app.listen(process.env.PORT || 7777, function () {
     console.log("[+] app listening for requests")

@@ -1,4 +1,3 @@
-const isEmpty = require("is-empty");
 const Q = require('q');
 if (process.env.NODE_ENV !== "production") {
     const dotEnv = require("dotenv"); //Configure environmental variables
@@ -11,13 +10,6 @@ if (process.env.NODE_ENV !== "production") {
 
 const appBootstrap = require("../main");
 const moment = require("moment");
-const token = process.env.SLACK_ACCESS_TOKEN;
-
-const {RTMClient, WebClient, ErrorCode} = require("@slack/client");
-const rtm = new RTMClient(token);
-const web = new WebClient(token);
-rtm.start();
-
 let today = moment().format("YYYY-MM-DD");
 
 let service = {};
@@ -40,10 +32,6 @@ function getUsers() {
             deferred.resolve(response);
         })
         .catch(error => {
-            if (error.code === ErrorCode.PlatformError) {
-                console.log("error message", error.message);
-                console.log("error message", error.data);
-            }
             deferred.reject(error);
         });
 
@@ -57,10 +45,6 @@ function checkUser(username) {
             deferred.resolve(success);
         })
         .catch(error => {
-            if (error.code === ErrorCode.PlatformError) {
-                console.log(error.message);
-                console.log(error.data);
-            }
             deferred.reject(error);
         });
 

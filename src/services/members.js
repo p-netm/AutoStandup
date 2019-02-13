@@ -42,7 +42,6 @@ function saveMember(username) {
 
 function flushMembers() {
     appBootstrap.memberRepository.countMembers().then(membersCount => {
-        console.log("Members count => " + membersCount.value);
         if(membersCount.value > 0){
             appBootstrap.memberRepository.flushMembers();
         }
