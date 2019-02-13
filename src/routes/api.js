@@ -11,6 +11,7 @@ const constants = require('../helper/constants');
 router.post('/slash-cmd', doSlashCommand);
 router.post('/dialog', openDialog);
 router.get('/dialog', getDialog);
+router.get('/members', getChannelMembers);
 
 function openDialog(request, response) {
     if (apiGuard.isVerified(request)) {
@@ -55,13 +56,19 @@ function openDialog(request, response) {
 }
 
 function getDialog(request, response) {
-    if (apiGuard.isVerified(request)) {
-        standUpService.getDialog().then(success => {
-            response.status(200).json({"Success worked well": success});
-        });
-    } else {
-        response.status(400).send({"Error Occurred": constants.invalidToken});
-    }
+    standUpService.getDialog().then(success => {
+        response.status(200).json({"Success dialog worked well": success});
+    }).catch(error => {
+        response.status(400).send({"Error Occurred": constants.invalidToken + error});
+    });
+}
+
+function getChannelMembers(request, response) {
+    standUpService.refreshChannelMembers().then(success => {
+        response.status(200).json({"Success channel members retrieved": success});
+    }).catch(error => {
+        response.status(400).send({"Error Occurred": constants.invalidToken + error});
+    });
 }
 
 function doSlashCommand(request, response) {
