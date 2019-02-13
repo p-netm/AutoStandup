@@ -10,14 +10,18 @@ if (process.env.NODE_ENV !== "production") {
 const appBootstrap = require("../main");
 const commons = require("../helper/commons");
 const usersService = require("../services/users");
+const membersService = require("../services/members");
 const moment = require("moment");
-const today = moment().format("YYYY-MM-DD");
+
 const token = process.env.SLACK_ACCESS_TOKEN;
 
 const {RTMClient, WebClient, ErrorCode} = require("@slack/client");
 const rtm = new RTMClient(token);
 const web = new WebClient(token);
+
 rtm.start();
+
+let today = moment().format("YYYY-MM-DD");
 
 let service = {};
 service.sendMessageToUser = sendMessageToUser;
@@ -27,6 +31,7 @@ service.promptIndividualStandup = promptIndividualStandup;
 service.notifyBeforePostingStandup = notifyBeforePostingStandup;
 service.postTeamStandupsToChannel = postTeamStandUpsToChannel;
 service.postIndividualStandupToChannel = postIndividualStandUpToChannel;
+service.refreshChannelMembers = refreshChannelMembers;
 service.respondToMessages = respondToMessages;
 service.openDialog = openDialog;
 service.getDialog = getDialog;
@@ -111,21 +116,13 @@ function saveStandUp(standUpDetails) {
  * Get users then prompt them for standups
  */
 function promptIndividualStandup() {
-    let rmUserArr = [];
-    usersService.getUsers().then(res => {
-        res.forEach(res => {
-            rmUserArr.push(res.username);
-        });
-    });
-    usersService.getChannelMembers().then(success => {
-        let allChannelUsers = success.members;
-        allChannelUsers = allChannelUsers.filter(
-            item => !rmUserArr.includes(item)
-        );
-
-        allChannelUsers.forEach(user => {
-            sendMessageToUser(user, commons.pickRandomPromptMsg());
-        });
+    usersService.getLateSubmitters().then(lateSubmitters => {
+        if (lateSubmitters.length > 0) {
+            console.log("Behold late submitters members = > " + lateSubmitters);
+            lateSubmitters.forEach(user => {
+                sendMessageToUser(user, commons.pickRandomReminderMsg());
+            });
+        }
     });
 }
 
@@ -133,38 +130,14 @@ function promptIndividualStandup() {
  * Notify users 180 minutes before posting standup on channel
  */
 function notifyBeforePostingStandup() {
-    let rmUserArr = [];
-    usersService.getUsers().then(res => {
-        if (res.length > 0) {
-            res.forEach(res => {
-                rmUserArr.push(res.username);
-            });
-            console.log("Unsubscribed users = " + rmUserArr)
-        }
-    });
-    usersService.getLateSubmitters().then(success => {
-        let lateSubmitters;
-        if (success.length > 0) {
-            lateSubmitters = success;
-            console.log("Late submitters before filter = " + lateSubmitters);
-            lateSubmitters = lateSubmitters.filter(
-                item => !rmUserArr.includes(item)
-            );
-            console.log("Late submitters after filter = " + lateSubmitters);
-            if (lateSubmitters.length > 0) {
-                success.forEach(user => {
-                    sendMessageToUser(user, commons.pickRandomReminderMsg());
-                });
-            }
-        }
-
-    });
+    promptIndividualStandup();
 }
 
 /**
  * Post formatted standups to channel
  */
 function postTeamStandUpsToChannel() {
+    today = moment().format("YYYY-MM-DD");
     let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
     let standupUpdate = `*📅 Showing Ona Standup Updates On ${todayFormatted}*\n\n`;
     appBootstrap.userStandupRepo
@@ -238,6 +211,7 @@ function postTeamStandUpsToChannel() {
                 });
             } else {
                 web.channels.list().then(res => {
+                    today = moment().format("YYYY-MM-DD");
                     let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
                     const channel = res.channels.find(c => c.is_member);
                     if (channel) {
@@ -265,7 +239,7 @@ function postTeamStandUpsToChannel() {
 function postIndividualStandUpToChannel(item) {
     let deferred = Q.defer();
 
-    let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
+    let todayFormatted = moment(item.date_posted, "YYYY-MM-DD").format("MMM Do YYYY");
     let standupUpdate = `🔔 \`Update\` *New standup update posted ${todayFormatted}*\n\n`;
     let attachment = {
         color: "#FFA300",
@@ -345,4 +319,38 @@ function openDialog(triggerId, dialog) {
         });
 
     return deferred.promise;
+}
+
+/**
+ * Flush channel members table
+ * Find channel that the bot belongs to get the members and save to local db
+ */
+function refreshChannelMembers() {
+    membersService.flushMembers();
+    let deferred = Q.defer();
+    const resp = {};
+    console.log("getting  channel members");
+    web.channels.list().then(success => {
+        const channel = success.channels.find(c => c.is_member);
+        if (channel) {
+            resp.ok = true;
+            resp.members = channel.members;
+        } else {
+            resp.ok = false;
+            resp.members = [];
+        }
+        console.log("channel members " + resp.members);
+        resp.members.map(it => {
+            membersService.saveMember(it)
+        });
+        deferred.resolve(resp.members);
+    }).catch(error => {
+        if (error.code === ErrorCode.PlatformError) {
+            console.log(error.message);
+            console.log(error.data);
+        }
+        deferred.reject(error);
+    });
+
+    return deferred.promise
 }
