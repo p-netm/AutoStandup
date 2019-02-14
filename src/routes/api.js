@@ -1,4 +1,5 @@
 const express = require('express');
+const moment = require('moment');
 const router = express.Router();
 
 const apiGuard = require('./guards/verify-signature');
@@ -15,12 +16,13 @@ function openDialog(request, response) {
     if (apiGuard.isVerified(request)) {
         const body = JSON.parse(request.body.payload);
         const team = body.submission.team;
+        const today = moment().format("YYYY-MM-DD");
         let standUpDetails = {
             username: body.user.id,
             standup_today: body.submission.standup_today,
             team: team,
             standup_previous: body.submission.standup_previous,
-            date_posted: body.state
+            date_posted: today
         };
 
         if (team === "None") {

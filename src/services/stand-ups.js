@@ -10,14 +10,32 @@ if (process.env.NODE_ENV !== "production") {
 const appBootstrap = require("../main");
 const commons = require("../helper/commons");
 const usersService = require("../services/users");
+const membersService = require("../services/members");
 const moment = require("moment");
-const today = moment().format("YYYY-MM-DD");
+
 const token = process.env.SLACK_ACCESS_TOKEN;
 
 const {RTMClient, WebClient, ErrorCode} = require("@slack/client");
 const rtm = new RTMClient(token);
 const web = new WebClient(token);
-rtm.start();
+let rtmDeferred = Q.defer();
+
+function startRtm() {
+    rtm.start().then(success => {
+        console.log("Connection successful!");
+        rtmDeferred.resolve(success)
+    }).catch(error => {
+        if (error.code === ErrorCode.PlatformError) {
+            console.log(error.message);
+            console.log(error.data);
+        }
+        rtmDeferred.reject(error);
+    });
+}
+
+startRtm();
+
+let today = moment().format("YYYY-MM-DD");
 
 let service = {};
 service.sendMessageToUser = sendMessageToUser;
@@ -27,9 +45,11 @@ service.promptIndividualStandup = promptIndividualStandup;
 service.notifyBeforePostingStandup = notifyBeforePostingStandup;
 service.postTeamStandupsToChannel = postTeamStandUpsToChannel;
 service.postIndividualStandupToChannel = postIndividualStandUpToChannel;
+service.refreshChannelMembers = refreshChannelMembers;
 service.respondToMessages = respondToMessages;
 service.openDialog = openDialog;
 service.getDialog = getDialog;
+service.startRtm = startRtm;
 module.exports = service;
 
 /**
@@ -43,8 +63,10 @@ function getDialog() {
 
 
 /***
- *  Get conversation id for user with id [userId]
- *  Post message to the user
+ * Sends message to user with the specified Id
+ * @param userId slack user id
+ * @param message message to be sent
+ * @returns {Q.Promise<any>}
  */
 function sendMessageToUser(userId, message) {
     let deferred = Q.defer();
@@ -67,6 +89,13 @@ function sendMessageToUser(userId, message) {
     return deferred.promise;
 }
 
+/***
+ * Posts message to user with the specified id
+ * @param userId users slack id
+ * @param message message to be posted
+ * @param attachments formatted text to improve visual appearance on slack
+ * @returns {Q.Promise<any>}
+ */
 function postMessageToUser(userId, message, attachments) {
     let deferred = Q.defer();
     web.conversations
@@ -111,21 +140,13 @@ function saveStandUp(standUpDetails) {
  * Get users then prompt them for standups
  */
 function promptIndividualStandup() {
-    let rmUserArr = [];
-    usersService.getUsers().then(res => {
-        res.forEach(res => {
-            rmUserArr.push(res.username);
-        });
-    });
-    usersService.getChannelMembers().then(success => {
-        let allChannelUsers = success.members;
-        allChannelUsers = allChannelUsers.filter(
-            item => !rmUserArr.includes(item)
-        );
-
-        allChannelUsers.forEach(user => {
-            sendMessageToUser(user, commons.pickRandomPromptMsg());
-        });
+    usersService.getLateSubmitters().then(lateSubmitters => {
+        if (lateSubmitters.length > 0) {
+            console.log("Behold late submitters members = > " + lateSubmitters);
+            lateSubmitters.forEach(user => {
+                sendMessageToUser(user, commons.pickRandomReminderMsg());
+            });
+        }
     });
 }
 
@@ -133,140 +154,117 @@ function promptIndividualStandup() {
  * Notify users 180 minutes before posting standup on channel
  */
 function notifyBeforePostingStandup() {
-    let rmUserArr = [];
-    usersService.getUsers().then(res => {
-        if (res.length > 0) {
-            res.forEach(res => {
-                rmUserArr.push(res.username);
-            });
-            console.log("Unsubscribed users = " + rmUserArr)
-        }
-    });
-    usersService.getLateSubmitters().then(success => {
-        let lateSubmitters;
-        if (success.length > 0) {
-            lateSubmitters = success;
-            console.log("Late submitters before filter = " + lateSubmitters);
-            lateSubmitters = lateSubmitters.filter(
-                item => !rmUserArr.includes(item)
-            );
-            console.log("Late submitters after filter = " + lateSubmitters);
-            if (lateSubmitters.length > 0) {
-                success.forEach(user => {
-                    sendMessageToUser(user, commons.pickRandomReminderMsg());
-                });
-            }
-        }
+    promptIndividualStandup();
+}
 
+/**
+ * Method that posts message to standup channel
+ * @param message
+ * @param allAttachments
+ */
+function postMessageToChannel(message, allAttachments) {
+    web.channels.list().then(res => {
+        const channel = res.channels.find(c => c.is_member);
+        if (channel) {
+            web.chat
+                .postMessage({
+                    text: message,
+                    attachments: allAttachments,
+                    channel: channel.id
+                })
+                .then(msg =>
+                    console.log(
+                        `Message sent to channel ${channel.name} with ts:${msg.ts}`
+                    )
+                )
+                .catch(console.error);
+        } else {
+            console.log(
+                "This bot does not belong to any channel, invite it to at least one and try again"
+            );
+        }
     });
 }
 
 /**
- * Post formatted standups to channel
+ * Formats the message by applying slack formatting for better visuals
+ * @param item  current posted standup
+ * @param index current index or position of standup update
+ * @param data all posted standups
+ * @returns {{color: string, footer: string, title: string, fields: {short: boolean, title: string, value: string}[], fallback: string}}
+ */
+function formatTeamsMessageAttachment(item, index, data) {
+    let attachment = {
+        color: "#dfdfdf",
+        title: `<@${item.username}>`,
+        fallback:
+            "Sorry Could not display standups in this type of device. Check in desktop browser",
+        fields: [
+            {
+                title: "Today",
+                value: `${item.standup_today}`,
+                short: false
+            }
+        ],
+        footer: `Posted as ${item.team}`
+    };
+    if (item.standup_previous != null) {
+        const previously = {
+            title: "Yesterday/Previously",
+            value: `${
+                item.standup_previous == null
+                    ? "Not specified"
+                    : item.standup_previous
+                }`,
+            short: false
+        };
+        attachment.fields.push(previously);
+    }
+    if (index === 0) {
+        attachment.pretext = `Team ${item.team} Standups`;
+        attachment.color = "#7DCC34";
+    }
+    if (index > 0) {
+        if (item.team !== data[index - 1].team) {
+            attachment.pretext = `Team ${item.team} Standups`;
+            attachment.color = "#7DCC34";
+        }
+    }
+    return attachment;
+}
+
+/***
+ *  Post formatted standups to channel
  */
 function postTeamStandUpsToChannel() {
+    today = moment().format("YYYY-MM-DD");
     let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
     let standupUpdate = `*📅 Showing Ona Standup Updates On ${todayFormatted}*\n\n`;
-    appBootstrap.userStandupRepo
-        .getByDatePosted(today)
+    appBootstrap.userStandupRepo.getByDatePosted(today)
         .then(data => {
             let attachments = [];
-
             data.forEach((item, index) => {
-                let attachment = {
-                    color: "#dfdfdf",
-                    title: `<@${item.username}>`,
-                    fallback:
-                        "Sorry Could not display standups in this type of device. Check in desktop browser",
-                    fields: [
-                        {
-                            title: "Today",
-                            value: `${item.standup_today}`,
-                            short: false
-                        }
-                    ],
-                    footer: `Posted as ${item.team}`
-                };
-                if (item.standup_previous != null) {
-                    const previously = {
-                        title: "Yesterday/Previously",
-                        value: `${
-                            item.standup_previous == null
-                                ? "Not specified"
-                                : item.standup_previous
-                            }`,
-                        short: false
-                    };
-                    attachment.fields.push(previously);
-                }
-                if (index === 0) {
-                    attachment.pretext = `Team ${item.team} Standups`;
-                    attachment.color = "#7DCC34";
-                }
-                if (index > 0) {
-                    if (item.team != data[index - 1].team) {
-                        attachment.pretext = `Team ${item.team} Standups`;
-                        attachment.color = "#7DCC34";
-                    }
-                }
+                let attachment = formatTeamsMessageAttachment(item, index, data);
                 attachments.push(attachment);
             });
             return Promise.resolve(attachments);
         })
         .then(allAttachments => {
             if (allAttachments.length > 0) {
-                web.channels.list().then(res => {
-                    const channel = res.channels.find(c => c.is_member);
-                    if (channel) {
-                        web.chat
-                            .postMessage({
-                                text: standupUpdate,
-                                attachments: allAttachments,
-                                channel: channel.id
-                            })
-                            .then(msg =>
-                                console.log(
-                                    `Message sent to channel ${channel.name} with ts:${msg.ts}`
-                                )
-                            )
-                            .catch(console.error);
-                    } else {
-                        console.log(
-                            "This bot does not belong to any channel, invite it to at least one and try again"
-                        );
-                    }
-                });
+                postMessageToChannel(standupUpdate, allAttachments);
             } else {
-                web.channels.list().then(res => {
-                    let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
-                    const channel = res.channels.find(c => c.is_member);
-                    if (channel) {
-                        web.chat
-                            .postMessage({
-                                text: `*📅 Nothing to show. No standup updates for ${todayFormatted}*`,
-                                channel: channel.id
-                            })
-                            .then(msg =>
-                                console.log(
-                                    `Message sent to channel ${channel.name} with ts:${msg.ts}`
-                                )
-                            )
-                            .catch(console.error);
-                    } else {
-                        console.log(
-                            "This bot does not belong to any channel, invite it to at least one and try again"
-                        );
-                    }
-                });
+                standupUpdate = `*📅 Nothing to show. No standup updates for ${todayFormatted}*`;
+                postMessageToChannel(standupUpdate, [])
             }
         });
 }
 
-function postIndividualStandUpToChannel(item) {
-    let deferred = Q.defer();
-
-    let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
-    let standupUpdate = `🔔 \`Update\` *New standup update posted ${todayFormatted}*\n\n`;
+/**
+ * Formats the message for a single standup posted by user
+ * @param item standup to be posted
+ * @returns {{color: string, footer: string, title: string, fields: {short: boolean, title: string, value: string}[], fallback: string}}
+ */
+function formatSingleMessageAttachment(item) {
     let attachment = {
         color: "#FFA300",
         title: `<@${item.username}>`,
@@ -281,7 +279,7 @@ function postIndividualStandUpToChannel(item) {
         ],
         footer: `Posted as individual`
     };
-    if (item.standup_previous != null) {
+    if (item.standup_previous !== null) {
         const previously = {
             title: "Yesterday/Previously",
             value: `${
@@ -293,28 +291,22 @@ function postIndividualStandUpToChannel(item) {
         };
         attachment.fields.push(previously);
     }
+    return attachment;
+}
 
+/**
+ * Posts individual standup to channel
+ * @param item standup to be posted
+ * @returns {Q.Promise<any>}
+ */
+function postIndividualStandUpToChannel(item) {
+    let deferred = Q.defer();
+    let todayFormatted = moment(item.date_posted, "YYYY-MM-DD").format("MMM Do YYYY");
+    let standupUpdate = `🔔*New standup update posted ${todayFormatted}*\n\n`;
+    let attachment = formatSingleMessageAttachment(item);
     let attachments = [];
     attachments.push(attachment);
-    web.channels.list().then(res => {
-        const channel = res.channels.find(c => c.is_member);
-        if (channel) {
-            web.chat
-                .postMessage({
-                    text: standupUpdate,
-                    attachments: attachments,
-                    channel: channel.id
-                })
-                .then(msg => {
-                    deferred.resolve(`Message sent to channel ${channel.name} with ts:${msg.ts}`)
-                }).catch(error => {
-                deferred.reject(error);
-            });
-        } else {
-            deferred.reject("This bot does not belong to any channel, invite it to at least one and try again");
-        }
-    });
-
+    postMessageToChannel(standupUpdate, attachments);
     return deferred.promise;
 }
 
@@ -324,10 +316,11 @@ function postIndividualStandUpToChannel(item) {
 function respondToMessages() {
 }
 
-/**
+/***
  *
- * @param {trigerId used to load form} triggerId
- * @param {dialog elements} dialog
+ * @param triggerId trigger_id sent by invoking slash command
+ * @param dialog content of dialog to be opened
+ * @returns {Q.Promise<any>}
  */
 function openDialog(triggerId, dialog) {
     let deferred = Q.defer();
@@ -345,4 +338,37 @@ function openDialog(triggerId, dialog) {
         });
 
     return deferred.promise;
+}
+
+/**
+ * Flush channel members table
+ * Find channel that the bot belongs to, get the members and save to local db
+ */
+function refreshChannelMembers() {
+    membersService.flushMembers();
+    let deferred = Q.defer();
+    const resp = {};
+    web.channels.list().then(success => {
+        const channel = success.channels.find(c => c.is_member);
+        if (channel) {
+            resp.ok = true;
+            resp.members = channel.members;
+        } else {
+            resp.ok = false;
+            resp.members = [];
+        }
+        console.log("channel members " + resp.members);
+        resp.members.map(it => {
+            membersService.saveMember(it)
+        });
+        deferred.resolve(resp.members);
+    }).catch(error => {
+        if (error.code === ErrorCode.PlatformError) {
+            console.log(error.message);
+            console.log(error.data);
+        }
+        deferred.reject(error);
+    });
+
+    return deferred.promise
 }
