@@ -10,7 +10,13 @@ if (process.env.NODE_ENV !== "production") {
 
 const appBootstrap = require("../main");
 const moment = require("moment");
-let today = moment().format("YYYY-MM-DD");
+const today = moment().format("YYYY-MM-DD");
+const token = process.env.SLACK_ACCESS_TOKEN;
+
+const {RTMClient, WebClient, ErrorCode} = require("@slack/client");
+const rtm = new RTMClient(token);
+const web = new WebClient(token);
+rtm.start();
 
 let service = {};
 service.getUsers = getUsers;
@@ -18,7 +24,7 @@ service.checkUser = checkUser;
 service.saveUser = saveUser;
 service.deleteUser = deleteUser;
 service.getLateSubmitters = getLateSubmitters;
-service.getChannelMembers = getStoredChannelMembers;
+service.getChannelMembers = getChannelMembers;
 service.getHistory = getHistory;
 module.exports = service;
 
@@ -32,6 +38,10 @@ function getUsers() {
             deferred.resolve(response);
         })
         .catch(error => {
+            if (error.code === ErrorCode.PlatformError) {
+                console.log("error message", error.message);
+                console.log("error message", error.data);
+            }
             deferred.reject(error);
         });
 
@@ -45,6 +55,10 @@ function checkUser(username) {
             deferred.resolve(success);
         })
         .catch(error => {
+            if (error.code === ErrorCode.PlatformError) {
+                console.log(error.message);
+                console.log(error.data);
+            }
             deferred.reject(error);
         });
 
@@ -60,47 +74,65 @@ function deleteUser(username) {
 }
 
 /**
- * Retrieve all the locally stored channel members
+ * Find channel that the bot belongs to and return the members
  */
-function getStoredChannelMembers() {
+function getChannelMembers() {
     let deferred = Q.defer();
-    appBootstrap.memberRepository.getAllChannelMembers().then(success => {
-        deferred.resolve(success.map(it => it.username));
+    const resp = {};
+    web.channels.list().then(success => {
+        const channel = success.channels.find(c => c.is_member);
+        if (channel) {
+            resp.ok = true;
+            resp.members = channel.members;
+        } else {
+            resp.ok = false;
+            resp.members = [];
+        }
+        deferred.resolve(resp);
     }).catch(error => {
+        if (error.code === ErrorCode.PlatformError) {
+            console.log(error.message);
+            console.log(error.data);
+        }
         deferred.reject(error);
     });
+
     return deferred.promise
 }
 
 /**
  * Get those who have submitted. If someone is not in this list then
- * they have not submitted.
+ * they have not submitted. Proceed to send the notification to these late submitters.
+ * Only if they are subscribed to notification service otherwise ignore them
  */
 function getLateSubmitters() {
     let deferred = Q.defer();
-    today = moment().format("YYYY-MM-DD");
-
-    getUsers().then(unsubscribedUsers => {
-        let users = unsubscribedUsers.map(it => it.username);
-        let earlySubmitter = [];
-        appBootstrap.userStandupRepo.getUsersWhoSubmitedByDate(today)
-            .then(submitters => {
-                earlySubmitter = submitters.map(it => it.username);
-                return getStoredChannelMembers().then(members => {
-                    console.log("All channel members = > " + members);
-                    console.log("Unsubscribed members = > " + users);
-                    console.log("Submitted members = > " + earlySubmitter);
-                    //Remove those who submitted from this list
-                    let filteredChannelUsers = members.filter(item => !earlySubmitter.includes(item));
-                    //Remove users who have unsubscribed and return the list
-                    filteredChannelUsers = filteredChannelUsers.filter(item => !users.includes(item));
-                    deferred.resolve(filteredChannelUsers);
+    appBootstrap.userStandupRepo.getUsersWhoSubmitedByDate(today)
+        .then(success => {
+            let earlySubmitters = [];
+            if (success.length > 0) {
+                success.forEach((user) => {
+                    earlySubmitters.push(user.username)
                 })
+            }
+            deferred.resolve(earlySubmitters);
+        })
+        .then(submitters => {
+            return getChannelMembers().then(success => {
+                let allChannelUsers = success.members;
+                allChannelUsers = allChannelUsers.filter(
+                    item => !submitters.includes(item)
+                );
+                deferred.resolve(allChannelUsers);
             })
-            .catch(error => {
-                deferred.reject(error);
-            });
-    });
+        })
+        .catch(error => {
+            if (error.code === ErrorCode.PlatformError) {
+                console.log("error message", error.message);
+                console.log("error message", error.data);
+            }
+            deferred.reject(error);
+        });
 
     return deferred.promise;
 }
@@ -109,7 +141,6 @@ function getHistory(username, daysToSubtract) {
     let deferred = Q.defer();
     let momentStartDate = moment().subtract(daysToSubtract, 'days').calendar();
     let startDate = moment(momentStartDate, "L").format("YYYY-MM-DD");
-    today = moment().format("YYYY-MM-DD");
     console.log("Fetching history between " + startDate + " and " + today);
     appBootstrap.userStandupRepo.getHistory(username, startDate, today)
         .then((success) => {
