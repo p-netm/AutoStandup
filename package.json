@@ -4,12 +4,13 @@
   "description": "A slack bot that manages stand ups",
   "main": "server.js",
   "scripts": {
-    "start": "DEBUG=onaautostandup node src/index.js"
+    "start": "DEBUG=onaautostandup node server.js"
   },
   "authors": [
     "Pharis Kahama <pkahama@ona.io>",
     "Elly Kitoto <ekitoto@ona.io>",
-    "Benjamin Mwalimu <bmulyungi@ona.io>"
+    "Benjamin Mwalimu <bmulyungi@ona.io>",
+    "Kiragu Winnie <wkiragu@ona.io>"
   ],
   "license": "ISC",
   "engines": {
