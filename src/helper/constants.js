@@ -8,6 +8,7 @@ constants.promptResponse = ["Hey, submit your daily standup. Use `/standup post`
     "Greetings!, please submit your daily standup. Use `/standup post` command to submit standup; for help  `/standup help`"];
 constants.reminderResponse = ["Hey, submit your daily standup, posting time is `2.30PM`. Don't be left out!",
     "Hi, time runs so fast. Submit your standup before `2.30PM`.",
+    "Hi, your standup please am posting at `2.30PM`.",
     "Hey, in the next `2hrs` at 2.30PM team standup will be posted. Submit yours today. ",
     "Greetings!, please submit your daily standup. Time for posting is `2.30PM`"];
 constants.dialog = {

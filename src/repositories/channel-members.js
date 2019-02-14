@@ -19,7 +19,7 @@ class MemberRepository {
     }
 
     updateMember(person) {
-        const { id, username } = person;
+        const {id, username} = person;
         const updateStatement = "UPDATE channel_members SET username = ? WHERE id = ?";
         return this.dao.run(updateStatement, [username, id])
     }
@@ -28,26 +28,33 @@ class MemberRepository {
         const deleteStatement = "DELETE FROM channel_members WHERE id = ?";
         return this.dao.run(deleteStatement, [id])
     }
-    countMembers(){
+
+    countMembers() {
         const statement = "SELECT count(*) as value FROM channel_members";
         return this.dao.get(statement);
     }
+
     flushMembers() {
+        const seqStatement = "UPDATE sqlite_sequence SET seq = 0 WHERE name = 'channel_members'";
         const deleteStatement = "DELETE FROM channel_members";
-        return this.dao.run(deleteStatement);
+        return this.dao.run(deleteStatement).then(() => this.dao.run(seqStatement));
     }
+
     deleteMemberByUsername(username) {
         const deleteByUsernameStatement = "DELETE FROM channel_members WHERE username = ?";
         return this.dao.get(deleteByUsernameStatement, [username])
     }
+
     getMemberById(id) {
         const statement = "SELECT * FROM channel_members WHERE id = ?";
         return this.dao.get(statement, [id])
     }
+
     getMemberByUsername(username) {
         const statement = "SELECT * FROM channel_members WHERE username = ?";
         return this.dao.get(statement, [username])
     }
+
     getAllChannelMembers() {
         const statement = "SELECT  * FROM channel_members";
         return this.dao.all(statement)
