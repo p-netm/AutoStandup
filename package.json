@@ -2,9 +2,9 @@
   "name": "auto_standup",
   "version": "1.0.0",
   "description": "A slack bot that manages stand ups",
-  "main": "server.js",
+  "main": "standup.js",
   "scripts": {
-    "start": "DEBUG=onaautostandup node server.js"
+    "start": "DEBUG=onaautostandup node standup.js"
   },
   "authors": [
     "Pharis Kahama <pkahama@ona.io>",
