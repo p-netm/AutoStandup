@@ -136,25 +136,29 @@ function saveStandUp(standUpDetails) {
 }
 
 
-/**
- * Get users then prompt them for standups
+/***
+ * prompt for standup from those who have not submitted
+ * @param promptMessage random message sent to users
  */
-function promptIndividualStandup() {
+function promptStandup(promptMessage) {
     usersService.getLateSubmitters().then(lateSubmitters => {
         if (lateSubmitters.length > 0) {
             console.log("Behold late submitters members = > " + lateSubmitters);
             lateSubmitters.forEach(user => {
-                sendMessageToUser(user, commons.pickRandomReminderMsg());
+                sendMessageToUser(user, promptMessage);
             });
         }
     });
+}
+function promptIndividualStandup() {
+    promptStandup(commons.pickRandomPromptMsg());
 }
 
 /**
  * Notify users 180 minutes before posting standup on channel
  */
 function notifyBeforePostingStandup() {
-    promptIndividualStandup();
+    promptStandup(commons.pickRandomReminderMsg());
 }
 
 /**
