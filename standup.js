@@ -42,6 +42,6 @@ app.get('/', (req, res) => {
 appBootstrap.main();
 onTimeService.runSchedules();
 
-app.listen(process.env.PORT || 7777, function () {
+app.listen(process.env.PORT || 8008, function () {
     console.log("[+] app listening for requests")
 });
