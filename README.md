@@ -22,7 +22,7 @@ To package and run this application, you'll need to:
 * [Install and configure Docker globally on your machine](https://docs.docker.com/compose/install/)
 * Clone this repository:
 
-      $ git clone https://github.com/kahummer/AutoStandup.git
+      $ git clone https://github.com/onaio/AutoStandup.git
       $ cd AutoStandup
 
 
@@ -31,12 +31,12 @@ To package and run this application, you'll need to:
 
 ------------------------------------------------------------------------
 
-Run the following commands from the root directory of the project.
+Run the following commands from the root directory of the project to rebuild and recreate the containers
 
 ```
 
-docker-compose up
+ docker-compose up --force-recreate --remove-orphans --build
 
 ```
 
-The Docker container will then install all the necessary packages required for the project and make the application accessible via `127.0.0.1:7777`
+The Docker container will then install all the necessary packages required for the project and make the application accessible via `127.0.0.1:8008`

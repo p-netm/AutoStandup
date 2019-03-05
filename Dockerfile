@@ -1,4 +1,4 @@
-FROM node:8
+FROM keymetrics/pm2:latest-alpine
 
 # Create app directory
 WORKDIR /app
@@ -8,14 +8,16 @@ COPY . /app
 
 # Install app dependencies
 COPY package*.json ./
+COPY ecosystem.config.js ./
 
 
+ENV NPM_CONFIG_LOGLEVEL warn
 RUN npm install --quiet
 
-EXPOSE 7777
+EXPOSE 8008
 
 # Define environment variable
 ENV NAME .env
 
 
-CMD [ "npm", "start" ]
+CMD [ "pm2-runtime", "start", "ecosystem.config.js"]
