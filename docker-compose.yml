@@ -6,5 +6,7 @@ services:
      - "8008:8008"
     volumes: 
     - db:/opt/sqlite/db
+    environment:
+        TZ: "Africa/Nairobi"
 volumes:
   db:
