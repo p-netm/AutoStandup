@@ -88,6 +88,7 @@ function doSlashCommand(request, response) {
 }
 function actOnMessageEvents(request, response) {
     if (apiGuard.isVerified(request)) {
+        botInteraction.handleSlackMessageEvent(request);
         response.status(200).send(request.body.challenge);
     } else {
         console.log("An error occurred sorry");

@@ -12,6 +12,7 @@ const commons = require("../helper/commons");
 const constants = require("../helper/constants");
 const usersService = require("../services/users");
 const membersService = require("../services/members");
+const botInteractionService = require("../services/bot-interaction");
 const moment = require("moment");
 
 const token = process.env.SLACK_ACCESS_TOKEN;
@@ -326,7 +327,7 @@ function postIndividualStandUpToChannel(item) {
  */
 function respondToMessages(message) {
     console.log("New message: " + JSON.stringify(message));
-    sendMessageToUser(message.user, `>>>Hey <@${message.user}> wassup! How can I help you?`)
+
 }
 
 /***
