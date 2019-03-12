@@ -9,6 +9,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 const appBootstrap = require("../main");
 const commons = require("../helper/commons");
+const constants = require("../helper/constants");
 const usersService = require("../services/users");
 const membersService = require("../services/members");
 const moment = require("moment");
@@ -35,6 +36,10 @@ function startRtm() {
 
 startRtm();
 
+function handleMessages() {
+    rtm.on(constants.message, respondToMessages);
+}
+
 let today = moment().format("YYYY-MM-DD");
 
 let service = {};
@@ -50,6 +55,7 @@ service.respondToMessages = respondToMessages;
 service.openDialog = openDialog;
 service.getDialog = getDialog;
 service.startRtm = startRtm;
+service.handleMessages = handleMessages;
 module.exports = service;
 
 /**
@@ -150,6 +156,7 @@ function promptStandup(promptMessage) {
         }
     });
 }
+
 function promptIndividualStandup() {
     promptStandup(commons.pickRandomPromptMsg());
 }
@@ -317,7 +324,9 @@ function postIndividualStandUpToChannel(item) {
 /**
  * Interact with users v
  */
-function respondToMessages() {
+function respondToMessages(message) {
+    console.log("New message: " + JSON.stringify(message));
+    sendMessageToUser(message.user, `>>>Hey <@${message.user}> wassup! How can I help you?`)
 }
 
 /***

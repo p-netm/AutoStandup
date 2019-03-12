@@ -5,11 +5,13 @@ const router = express.Router();
 const apiGuard = require('./guards/verify-signature');
 const standUpService = require('../services/stand-ups');
 const slashCommandService = require('../services/slash-command');
+const botInteraction = require('../services/bot-interaction');
 const commons = require('../helper/commons');
 const constants = require('../helper/constants');
 
 router.post('/slash-cmd', doSlashCommand);
 router.post('/dialog', openDialog);
+router.post('/events',actOnMessageEvents);
 router.get('/dialog', getDialog);
 router.get('/members', getChannelMembers);
 
@@ -84,5 +86,11 @@ function doSlashCommand(request, response) {
         response.status(400).send({"Error Occurred": constants.invalidToken});
     }
 }
-
+function actOnMessageEvents(request, response) {
+    if (apiGuard.isVerified(request)) {
+        response.status(200).send(request.body.challenge);
+    } else {
+        console.log("An error occurred sorry");
+    }
+}
 module.exports = router;

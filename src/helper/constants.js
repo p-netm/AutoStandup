@@ -56,6 +56,7 @@ constants.unsubscribe = "unsubscribe";
 constants.subscribe = "subscribe";
 constants.post = "post";
 constants.help = "help";
+constants.message = "message";
 constants.attachments = [
     {
         fallback: "Post standup /standup post",
