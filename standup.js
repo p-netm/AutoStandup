@@ -50,7 +50,8 @@ app.listen(process.env.PORT || 8008, function () {
 /**
  * Configure and mount kue express dashboard {@link https://github.com/stonecircle/kue-ui-express }
  */
-kueUiExpress(app, '/kue/', '/kue-api/');
+
+kueUiExpress(app, '/kue/', '/kue-api');
 
 app.use('/kue-api/', kue.app);
 

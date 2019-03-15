@@ -1,5 +1,6 @@
 const kueConstant = require("../helper/kue-constants");
 const kueService = require("./queue");
+const standupService = require("../services/stand-ups");
 const queue = kueService.queue();
 let service = {};
 service.handleSlackMessageEvent = handleSlackMessageEvent;
@@ -25,3 +26,24 @@ function handleSlackMessageEvent(request) {
     body.title = kueConstant.jobTitle;
     createMessageJob(body);
 }
+
+function processChatJob() {
+    queue.process(kueConstant.chatJobType, kueConstant.numberOfConcurrentJobs, (job, done) => {
+        interactWithUser(job, done);
+    })
+}
+
+function interactWithUser(jobContent, done) {
+    let {event} = jobContent.data;
+    console.log(typeof  standupService);
+    console.log(standupService.str);
+
+  /*  if (event.text.includes("bot")) {
+        standupService.sendMessageToUser(event.user, `Hey <@${event.user}> Wassup!`);
+    } else if (event.text.includes("hello")) {
+        standupService.sendMessageToUser(event.user, `Hey boss! How is it going?`);
+    }*/
+    done();
+}
+
+processChatJob();

@@ -12,7 +12,7 @@ const commons = require("../helper/commons");
 const constants = require("../helper/constants");
 const usersService = require("../services/users");
 const membersService = require("../services/members");
-const botInteractionService = require("../services/bot-interaction");
+const botInteractionService = require("./bot");
 const moment = require("moment");
 
 const token = process.env.SLACK_ACCESS_TOKEN;
@@ -57,6 +57,7 @@ service.openDialog = openDialog;
 service.getDialog = getDialog;
 service.startRtm = startRtm;
 service.handleMessages = handleMessages;
+service.str = "Hello";
 module.exports = service;
 
 /**

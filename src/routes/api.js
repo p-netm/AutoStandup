@@ -5,7 +5,7 @@ const router = express.Router();
 const apiGuard = require('./guards/verify-signature');
 const standUpService = require('../services/stand-ups');
 const slashCommandService = require('../services/slash-command');
-const botInteraction = require('../services/bot-interaction');
+const botInteraction = require('../services/bot');
 const commons = require('../helper/commons');
 const constants = require('../helper/constants');
 

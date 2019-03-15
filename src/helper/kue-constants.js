@@ -5,3 +5,4 @@ kueConstant.port = 6379;
 kueConstant.chatJobType = "chat";
 kueConstant.exponential = "exponential";
 kueConstant.jobTitle = "Message Event";
+kueConstant.numberOfConcurrentJobs = 10;
