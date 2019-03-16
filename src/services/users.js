@@ -12,15 +12,13 @@ const appBootstrap = require("../main");
 const moment = require("moment");
 let today = moment().format("YYYY-MM-DD");
 
-let service = {};
-service.getUsers = getUsers;
-service.checkUser = checkUser;
-service.saveUser = saveUser;
-service.deleteUser = deleteUser;
-service.getLateSubmitters = getLateSubmitters;
-service.getChannelMembers = getStoredChannelMembers;
-service.getHistory = getHistory;
-module.exports = service;
+module.exports = {
+    checkUser: checkUser,
+    saveUser: saveUser,
+    deleteUser: deleteUser,
+    getLateSubmitters: getLateSubmitters,
+    getHistory: getHistory,
+};
 
 /**
  * get all users who unsubscribed

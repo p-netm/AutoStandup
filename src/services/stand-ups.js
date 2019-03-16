@@ -12,7 +12,6 @@ const commons = require("../helper/commons");
 const constants = require("../helper/constants");
 const usersService = require("../services/users");
 const membersService = require("../services/members");
-const botInteractionService = require("./bot");
 const moment = require("moment");
 
 const token = process.env.SLACK_ACCESS_TOKEN;
@@ -43,22 +42,19 @@ function handleMessages() {
 
 let today = moment().format("YYYY-MM-DD");
 
-let service = {};
-service.sendMessageToUser = sendMessageToUser;
-service.postMessageToUser = postMessageToUser;
-service.saveStandUp = saveStandUp;
-service.promptIndividualStandup = promptIndividualStandup;
-service.notifyBeforePostingStandup = notifyBeforePostingStandup;
-service.postTeamStandupsToChannel = postTeamStandUpsToChannel;
-service.postIndividualStandupToChannel = postIndividualStandUpToChannel;
-service.refreshChannelMembers = refreshChannelMembers;
-service.respondToMessages = respondToMessages;
-service.openDialog = openDialog;
-service.getDialog = getDialog;
-service.startRtm = startRtm;
-service.handleMessages = handleMessages;
-service.str = "Hello";
-module.exports = service;
+module.exports = {
+    sendMessageToUser: sendMessageToUser,
+    postMessageToUser: postMessageToUser,
+    saveStandUp: saveStandUp,
+    promptIndividualStandup: promptIndividualStandup,
+    notifyBeforePostingStandup: notifyBeforePostingStandup,
+    postTeamStandupsToChannel: postTeamStandUpsToChannel,
+    postIndividualStandupToChannel: postIndividualStandUpToChannel,
+    refreshChannelMembers: refreshChannelMembers,
+    openDialog: openDialog,
+    getDialog: getDialog,
+    handleMessages: handleMessages
+};
 
 /**
  * @desc Gets the dialog

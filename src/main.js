@@ -5,6 +5,7 @@ const TeamRepository = require("./repositories/teams");
 const UserStandupsRepository = require("./repositories/user-standups");
 const onTimeService = require("./services/on-time");
 const standUpService = require("./services/stand-ups");
+const chatbotService = require("./services/bot");
 
 const dao = new AppDao(process.env.DB_PATH);
 const userRepo = new UserRepository(dao);
@@ -16,6 +17,7 @@ function main() {
     initDb();
     onTimeService.runSchedules();
     standUpService.handleMessages();
+    chatbotService.processChatJob();
 }
 
 function initDb() {
@@ -37,4 +39,10 @@ function initDb() {
 
 }
 
-module.exports = {main, userRepo, teamRepo, userStandupRepo, memberRepository};
+module.exports = {
+    main: main,
+    userRepo,
+    teamRepo,
+    userStandupRepo,
+    memberRepository
+};

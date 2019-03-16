@@ -13,9 +13,9 @@ const usersService = require("../services/users");
 const standUpService = require("../services/stand-ups");
 const moment = require("moment");
 
-let service = {};
-service.runSlashCommand = runSlashCommand;
-module.exports = service;
+module.exports = {
+    runSlashCommand: runSlashCommand
+};
 
 function formatAttachments(content) {
     if (content.length > 0) {

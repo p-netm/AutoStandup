@@ -9,11 +9,11 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const appBootstrap = require("../main");
-let service = {};
-service.getMembers = getMembers;
-service.saveMember = saveMember;
-service.flushMembers = flushMembers;
-module.exports = service;
+
+module.exports = {
+    saveMember: saveMember,
+    flushMembers: flushMembers
+};
 
 /**
  * get all users who unsubscribed
@@ -42,7 +42,7 @@ function saveMember(username) {
 
 function flushMembers() {
     appBootstrap.memberRepository.countMembers().then(membersCount => {
-        if(membersCount.value > 0){
+        if (membersCount.value > 0) {
             appBootstrap.memberRepository.flushMembers();
         }
     });

@@ -8,4 +8,6 @@ const queue = function () {
         }
     });
 };
-module.exports = {queue: queue};
+module.exports = {
+    queue: queue
+};
