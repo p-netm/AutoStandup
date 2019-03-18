@@ -14,6 +14,12 @@ module.exports = {
  * @param payload request received from the endpoint
  */
 function createMessageJob(payload) {
+    const {event} = payload;
+    // Don not create job for messages sent bot or when message has been deleted.
+    if ((event === undefined) || (event.subtype !== undefined && (event.subtype === 'bot_message'
+        || event.subtype === 'message_deleted')) || (event.text === undefined)) {
+        return;
+    }
     queue.create(kueConstant.chatJobType, payload)
         .removeOnComplete(true)
         .attempts(5)
@@ -37,9 +43,9 @@ function processChatJob() {
 function interactWithUser(jobContent, done) {
     let {event} = jobContent.data;
     if (event.text.includes("bot")) {
-        standupService.sendMessageToUser(event.user, `Hey <@${event.user}> Wassup!`);
+        standupService.postMessageToUser(event.user, `Hey <@${event.user}> Wassup!`, []);
     } else if (event.text.includes("hello")) {
-        standupService.sendMessageToUser(event.user, `Hey boss! How is it going?`);
+        standupService.postMessageToUser(event.user, `Hey boss! How is it going?`, []);
     }
     done();
 }
