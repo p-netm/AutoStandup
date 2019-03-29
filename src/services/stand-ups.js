@@ -150,6 +150,7 @@ function promptStandup(promptMessage) {
         }
     });
 }
+
 function promptIndividualStandup() {
     promptStandup(commons.pickRandomPromptMsg());
 }
@@ -224,6 +225,15 @@ function formatTeamsMessageAttachment(item, index, data) {
         };
         attachment.fields.push(previously);
     }
+    if (item.blockers != null) {
+        const blockers = {
+            title: "Blockers",
+            value: `${item.blockers == null ? "Not specified" : item.blockers}`,
+            short: false
+        };
+        attachment.fields.push(blockers);
+    }
+
     if (index === 0) {
         attachment.pretext = `Team ${item.team} Standups`;
         attachment.color = "#7DCC34";
@@ -294,6 +304,14 @@ function formatSingleMessageAttachment(item) {
             short: false
         };
         attachment.fields.push(previously);
+    }
+    if (item.blockers != null) {
+        const blockers = {
+            title: "Blockers",
+            value: `${item.blockers == null ? "Not specified" : item.blockers}`,
+            short: false
+        };
+        attachment.fields.push(blockers);
     }
     return attachment;
 }

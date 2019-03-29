@@ -10,6 +10,7 @@ class UserStandup {
             standup_today TEXT  NOT NULL, 
             team TEXT NULL,                      
             standup_previous TEXT NULL,
+            blockers TEXT NULL,
             date_posted TEXT NOT NULL,
             status INTEGER DEFAULT 0
 
@@ -19,7 +20,7 @@ class UserStandup {
     }
     add(userStandup) {
         const { username, standup_today, team, standup_previous, date_posted, status} = userStandup;
-        const insertStatement = `INSERT INTO user_standups (username,standup_today,team,standup_previous,date_posted,status)
+        const insertStatement = `INSERT INTO user_standups (username,standup_today,team,standup_previous,blockers,date_posted,status)
          VALUES (?,?,?,?,?,?)`;
         this.dao.run(insertStatement, [username, standup_today, team, standup_previous, date_posted,status])
     }
@@ -27,7 +28,7 @@ class UserStandup {
     update(userStandup) {
         const { id, username, standup_today, team, standup_previous, date_posted, status } = userStandup;
         const updateStatement = `UPDATE user_standups SET username = ?, standup_today = ?,
-        team = ?, standup_previous = ?, date_posted = ?, status = ? WHERE id = ? 
+        team = ?, standup_previous = ?, blockers = ?, date_posted = ?, status = ? WHERE id = ? 
         `;
         return this.dao.run(updateStatement, [username, standup_today, team, standup_previous, date_posted, status, id])
     }

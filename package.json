@@ -18,8 +18,8 @@
     "npm": "6.7.0"
   },
   "dependencies": {
-    "@slack/client": "^4.8.0",
-    "@types/q": "^1.5.1",
+    "@slack/client": "^4.12.0",
+    "@types/q": "^1.5.2",
     "axios": "^0.18.0",
     "bluebird": "^3.5.3",
     "body-parser": "^1.17.1",
@@ -29,7 +29,7 @@
     "is-empty": "^1.2.0",
     "moment": "^2.24.0",
     "ontime": "0.0.6",
-    "postgres-migrations": "^3.0.0",
+    "postgres-migrations": "^3.0.2",
     "promise": "^7.1.1",
     "q": "^1.5.1",
     "slackbots": "^1.2.0",
@@ -39,12 +39,12 @@
   },
   "devDependencies": {
     "@types/crypto-js": "^3.1.43",
-    "@types/jasmine": "^3.3.7",
+    "@types/jasmine": "^3.3.12",
     "@types/jasminewd2": "^2.0.6",
-    "@types/node": "^10.12.21",
+    "@types/node": "^10.14.4",
     "dotenv": "^6.2.0",
     "ts-node": "^8.0.2",
-    "tslint": "^5.12.1",
-    "typescript": "^3.3.1"
+    "tslint": "^5.14.0",
+    "typescript": "^3.3.4000"
   }
 }
