@@ -105,13 +105,25 @@ function runSlashCommand(request, response) {
             });
             break;
         case constants.post:
-            standUpService.openDialog(trigger_id, constants.dialog)
-                .then(result => {
-                    if (result.ok === true) {
-                        deferred.resolve("");
+            deferred = postNewStandup(trigger_id, constants.dialog, deferred);
+            break;
+        case constants.edit:
+            usersService.getTodayPostedStandup(user_id)
+                .then((success) => {
+                    if (success !== undefined && success.length > 0) {
+                        constants.dialog.title = constants.dialog_edit.title;
+                        standUpService.openDialog(trigger_id, constants.dialog)
+                            .then(result => {
+                                if (result.ok === true) {
+                                    deferred.resolve("");
+                                } else {
+                                    deferred.reject();
+                                }
+                            });
                     } else {
-                        deferred.reject();
+                        deferred = postNewStandup(trigger_id, constants.dialog, deferred);
                     }
+                    deferred.resolve(constants.requestReceived)
                 });
             break;
         case constants.help:
@@ -125,4 +137,17 @@ function runSlashCommand(request, response) {
     }
 
     return deferred.promise;
+}
+
+function postNewStandup(trigger_id, dialog, deferred) {
+    standUpService.openDialog(trigger_id, dialog)
+        .then(result => {
+            if (result.ok === true) {
+                deferred.resolve("");
+            } else {
+                deferred.reject();
+            }
+        });
+
+    return deferred;
 }
