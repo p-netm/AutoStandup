@@ -11,7 +11,8 @@ class UserStandup {
             team TEXT NULL,                      
             standup_previous TEXT NULL,
             date_posted TEXT NOT NULL,
-            status INTEGER DEFAULT 0
+            status INTEGER DEFAULT 0,
+            deleted INTEGER DEFAULT 0
 
         )
         `;

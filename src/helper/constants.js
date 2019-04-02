@@ -56,6 +56,7 @@ constants.unsubscribe = "unsubscribe";
 constants.subscribe = "subscribe";
 constants.post = "post";
 constants.help = "help";
+constants.remove = "remove";
 constants.attachments = [
     {
         fallback: "Post standup /standup post",
@@ -88,11 +89,6 @@ constants.attachments = [
         fallback: "Modify standup /standup edit",
         pretext: "To update your standup",
         text: "`/standup edit`"
-    },
-    {
-        fallback: "Delete standup /standup remove",
-        pretext: "To delete your standup",
-        text: "`/standup remove`",
     },
     {
         fallback: "Display information standup /standup post",
