@@ -97,11 +97,6 @@ constants.attachments = [
         text: "`/standup edit`"
     },
     {
-        fallback: "Delete standup /standup remove",
-        pretext: "To delete your standup",
-        text: "`/standup remove`",
-    },
-    {
         fallback: "Display information standup /standup post",
         pretext: "To display your standup details. specify team/individual",
         text: "`/standup show [individual/name_of_team]`",
