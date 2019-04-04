@@ -84,7 +84,7 @@ function getLateSubmitters() {
     getUsers().then(unsubscribedUsers => {
         let users = unsubscribedUsers.map(it => it.username);
         let earlySubmitter = [];
-        appBootstrap.userStandupRepo.getUsersWhoSubmitedByDate(today)
+        appBootstrap.userStandupRepo.getUsersWhoSubmittedByDate(today)
             .then(submitters => {
                 earlySubmitter = submitters.map(it => it.username);
                 return getStoredChannelMembers().then(members => {
