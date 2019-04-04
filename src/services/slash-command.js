@@ -56,7 +56,7 @@ function createUpdatePayload(standUp) {
 	let standup_today = latestStandUp.standup_today;
 	let standup_previous = latestStandUp.standup_previous;
 	let blockers = latestStandUp.blockers;
-	dialog.id = latestStandUp.id;
+	dialog.state = latestStandUp.id;
 	
 	let elements = dialog.elements;
 	elements.forEach((element) => {

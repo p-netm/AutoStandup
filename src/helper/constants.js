@@ -15,7 +15,6 @@ constants.standup_update_dialog = {
     title: "Update your standup",
     callback_id: "submit-standup",
     submit_label: "Submit",
-    state: moment().format("YYYY-MM-DD"),
     elements: [
         {
             label: "Post as",
@@ -60,7 +59,6 @@ constants.dialog = {
     title: "Submit daily standup",
     callback_id: "submit-standup",
     submit_label: "Submit",
-    state: moment().format("YYYY-MM-DD"),
     elements: [
         {
             label: "Post as",

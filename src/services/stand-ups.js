@@ -50,6 +50,7 @@ service.respondToMessages = respondToMessages;
 service.openDialog = openDialog;
 service.getDialog = getDialog;
 service.startRtm = startRtm;
+service.updateStandUp = updateStandUp;
 module.exports = service;
 
 /**
@@ -133,6 +134,14 @@ function postMessageToUser(userId, message, attachments) {
  */
 function saveStandUp(standUpDetails) {
     appBootstrap.userStandupRepo.add(standUpDetails);
+}
+
+/**
+ * @desc Update the latest stand up
+ * @param standUpDetails
+ */
+function updateStandUp(standUpDetails) {
+    appBootstrap.userStandupRepo.update(standUpDetails);
 }
 
 

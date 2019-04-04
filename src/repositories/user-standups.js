@@ -75,7 +75,7 @@ class UserStandup {
 	}
 	
 	getByUserAndDate(username, datePosted) {
-		const statement = "SELECT * FROM user_standups WHERE date_posted = ? AND username = ? ORDER BY" +
+		const statement = "SELECT * FROM user_standups WHERE date_posted = ? AND username = ? AND status = 0 ORDER BY" +
 			" id DESC LIMIT 1";
 		return this.dao.all(statement, [datePosted, username])
 	}
