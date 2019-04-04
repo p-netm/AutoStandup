@@ -13,7 +13,8 @@ class UserStandup {
             standup_previous TEXT NULL,
             blockers TEXT NULL,
             date_posted TEXT NOT NULL,
-            status INTEGER DEFAULT 0
+            status INTEGER DEFAULT 0,
+            deleted INTEGER DEFAULT 0
         )
         `;
 		return this.dao.run(sql)
