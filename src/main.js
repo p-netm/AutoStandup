@@ -1,36 +1,25 @@
-const AppDao = require("./dao");
-const UserRepository = require("./repositories/users");
-const MemberRepository = require("./repositories/channel-members");
-const TeamRepository = require("./repositories/teams");
-const UserStandupsRepository = require("./repositories/user-standups");
 const onTimeService = require("./services/on-time");
-const standUpService = require("./services/stand-ups");
-const chatbotService = require("./services/bot");
-
-const dao = new AppDao(process.env.DB_PATH);
-const userRepo = new UserRepository(dao);
-const teamRepo = new TeamRepository(dao);
-const userStandupRepo = new UserStandupsRepository(dao);
-const memberRepository = new MemberRepository(dao);
+const repos = require("./services/repos");
 
 function main() {
     initDb();
     onTimeService.runSchedules();
-    standUpService.handleMessages();
-    chatbotService.processChatJob();
 }
 
 function initDb() {
     //Create tables
-    teamRepo.createTable()
+   repos.teamRepo.createTable()
+       .then(() => {
+           return repos.tokenRepo.createTable()
+       })
         .then(() => {
-            return userRepo.createTable()
+            return repos.userRepo.createTable()
         })
         .then(() => {
-            return memberRepository.createTable()
+            return repos.memberRepository.createTable()
         })
         .then(() => {
-            return userStandupRepo.createTable()
+            return repos.userStandupRepo.createTable()
         })
         .catch((err) => {
             console.log('Error: ');
@@ -41,8 +30,4 @@ function initDb() {
 
 module.exports = {
     main: main,
-    userRepo,
-    teamRepo,
-    userStandupRepo,
-    memberRepository
 };

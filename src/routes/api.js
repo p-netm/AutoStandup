@@ -1,19 +1,67 @@
 const express = require('express');
 const moment = require('moment');
+const axios = require("axios");
+const qs = require("querystring");
+const Q = require('q');
+
 const router = express.Router();
 
 const apiGuard = require('./guards/verify-signature');
 const standUpService = require('../services/stand-ups');
 const slashCommandService = require('../services/slash-command');
-const botInteraction = require('../services/bot');
 const commons = require('../helper/commons');
 const constants = require('../helper/constants');
+const repos = require("../services/repos");
 
+router.get('/authorized', getAccessToken);
 router.post('/slash-cmd', doSlashCommand);
 router.post('/dialog', openDialog);
-router.post('/events',actOnMessageEvents);
+router.post('/events', actOnMessageEvents);
 router.get('/dialog', getDialog);
 router.get('/members', getChannelMembers);
+router.get('/oauth', getAuthorization);
+
+if (!process.env.SLACK_REDIRECT_URL && !process.env.SLACK_CLIENT_ID) {
+    console.log('Error: Client ID and Slack REDIRECT URLS missing in the environment variables');
+    process.exit(1);
+}
+
+function getAccessToken(request, response) {
+    let deferred = Q.defer();
+    let code = request.query.code;
+    let redirectUri = request.protocol + '://' + request.get('host') + process.env.APP_API_BASE + "authorized";
+    let arguments = {
+        code: code,
+        redirect_uri: redirectUri
+    };
+    console.log("Retrieved code: " + code);
+
+    axios.default.post(constants.slackAuthUrl, qs.stringify(arguments), {
+        auth: {
+            username: process.env.SLACK_CLIENT_ID,
+            password: process.env.SLACK_CLIENT_SECRET
+        },
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    }).then((result) => {
+        repos.tokenRepo.add(JSON.stringify(result.data));
+        response.json(result.data).status(301);
+        deferred.resolve(result.data);
+    }).catch(error => {
+        console.log(error);
+        deferred.reject(error)
+    });
+    deferred.promise
+}
+
+function getAuthorization(request, response) {
+    let scopeParam = "bot commands chat:write:bot users:read im:history";
+    let domain = request.protocol + '://' + request.get('host') + process.env.APP_API_BASE;
+    let redirectUri = domain + "authorized";
+    let params = `?client_id=${process.env.SLACK_CLIENT_ID}&scope=${scopeParam}&redirect_uri=${redirectUri}`;
+    response.redirect(process.env.SLACK_REDIRECT_URL + params);
+}
 
 function openDialog(request, response) {
     if (apiGuard.isVerified(request)) {
@@ -86,12 +134,13 @@ function doSlashCommand(request, response) {
         response.status(400).send({"Error Occurred": constants.invalidToken});
     }
 }
+
 function actOnMessageEvents(request, response) {
     if (apiGuard.isVerified(request)) {
-        botInteraction.handleSlackMessageEvent(request);
         response.status(200).send(request.body.challenge);
     } else {
         console.log("An error occurred sorry");
     }
 }
+
 module.exports = router;

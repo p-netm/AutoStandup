@@ -7,9 +7,8 @@ if (process.env.NODE_ENV !== "production") {
         throw result.error;
     }
 }
-const appBootstrap = require("../main");
+const repos = require("../services/repos");
 const commons = require("../helper/commons");
-const constants = require("../helper/constants");
 const usersService = require("../services/users");
 const membersService = require("../services/members");
 const moment = require("moment");
@@ -36,10 +35,6 @@ function startRtm() {
 
 startRtm();
 
-function handleMessages() {
-    rtm.on(constants.message, respondToMessages);
-}
-
 let today = moment().format("YYYY-MM-DD");
 
 module.exports = {
@@ -52,8 +47,7 @@ module.exports = {
     postIndividualStandupToChannel: postIndividualStandUpToChannel,
     refreshChannelMembers: refreshChannelMembers,
     openDialog: openDialog,
-    getDialog: getDialog,
-    handleMessages: handleMessages
+    getDialog: getDialog
 };
 
 /**
@@ -136,7 +130,7 @@ function postMessageToUser(userId, message, attachments) {
  * Saves stand-ups to db
  */
 function saveStandUp(standUpDetails) {
-    appBootstrap.userStandupRepo.add(standUpDetails);
+    repos.userStandupRepo.add(standUpDetails);
 }
 
 
@@ -249,7 +243,7 @@ function postTeamStandUpsToChannel() {
     today = moment().format("YYYY-MM-DD");
     let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
     let standupUpdate = `*📅 Showing Ona Standup Updates On ${todayFormatted}*\n\n`;
-    appBootstrap.userStandupRepo.getByDatePosted(today)
+    repos.userStandupRepo.getByDatePosted(today)
         .then(data => {
             let attachments = [];
             data.forEach((item, index) => {

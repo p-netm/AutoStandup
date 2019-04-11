@@ -108,3 +108,4 @@ constants.attachments = [
 
 ];
 constants.requestReceived = "Request received!";
+constants.slackAuthUrl = "https://slack.com/api/oauth.access";

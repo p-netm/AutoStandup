@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== "production") {
     }
 }
 
-const appBootstrap = require("../main");
+const repos = require("../services/repos");
 const moment = require("moment");
 let today = moment().format("YYYY-MM-DD");
 
@@ -25,7 +25,7 @@ module.exports = {
  */
 function getUsers() {
     let deferred = Q.defer();
-    appBootstrap.userRepo.getAllUsers()
+    repos.userRepo.getAllUsers()
         .then(response => {
             deferred.resolve(response);
         })
@@ -38,7 +38,7 @@ function getUsers() {
 
 function checkUser(username) {
     let deferred = Q.defer();
-    appBootstrap.userRepo.getByUsername(username)
+    repos.userRepo.getByUsername(username)
         .then(success => {
             deferred.resolve(success);
         })
@@ -50,11 +50,11 @@ function checkUser(username) {
 }
 
 function saveUser(username) {
-    appBootstrap.userRepo.add(username);
+    repos.userRepo.add(username);
 }
 
 function deleteUser(username) {
-    appBootstrap.userRepo.deleteByUsername(username);
+    repos.userRepo.deleteByUsername(username);
 }
 
 /**
@@ -62,7 +62,7 @@ function deleteUser(username) {
  */
 function getStoredChannelMembers() {
     let deferred = Q.defer();
-    appBootstrap.memberRepository.getAllChannelMembers().then(success => {
+    repos.memberRepository.getAllChannelMembers().then(success => {
         deferred.resolve(success.map(it => it.username));
     }).catch(error => {
         deferred.reject(error);
@@ -81,7 +81,7 @@ function getLateSubmitters() {
     getUsers().then(unsubscribedUsers => {
         let users = unsubscribedUsers.map(it => it.username);
         let earlySubmitter = [];
-        appBootstrap.userStandupRepo.getUsersWhoSubmitedByDate(today)
+        repos.userStandupRepo.getUsersWhoSubmitedByDate(today)
             .then(submitters => {
                 earlySubmitter = submitters.map(it => it.username);
                 return getStoredChannelMembers().then(members => {
@@ -109,7 +109,7 @@ function getHistory(username, daysToSubtract) {
     let startDate = moment(momentStartDate, "L").format("YYYY-MM-DD");
     today = moment().format("YYYY-MM-DD");
     console.log("Fetching history between " + startDate + " and " + today);
-    appBootstrap.userStandupRepo.getHistory(username, startDate, today)
+    repos.userStandupRepo.getHistory(username, startDate, today)
         .then((success) => {
             deferred.resolve(success);
         })
