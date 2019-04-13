@@ -13,12 +13,17 @@ const usersService = require("../services/users");
 const membersService = require("../services/members");
 const moment = require("moment");
 
-const token = process.env.SLACK_ACCESS_TOKEN;
+let rtm = null;
+let web = null;
+let rtmDeferred = Q.defer();
 
 const {RTMClient, WebClient, ErrorCode} = require("@slack/client");
-const rtm = new RTMClient(token);
-const web = new WebClient(token);
-let rtmDeferred = Q.defer();
+
+getAccessToken(process.env.WORKSPACE).then(token => {
+    rtm = new RTMClient(token);
+    web = new WebClient(token);
+    startRtm();
+});
 
 function startRtm() {
     rtm.start().then(success => {
@@ -32,8 +37,6 @@ function startRtm() {
         rtmDeferred.reject(error);
     });
 }
-
-startRtm();
 
 let today = moment().format("YYYY-MM-DD");
 
@@ -49,6 +52,17 @@ module.exports = {
     openDialog: openDialog,
     getDialog: getDialog
 };
+
+async function getAccessToken(teamName) {
+    let token = "";
+    return await repos.tokenRepo.getTokenByTeam(teamName)
+        .then(result => {
+            let {bot} = JSON.parse(result.value);
+            token = bot.bot_access_token;
+            return Promise.resolve(token);
+        });
+
+}
 
 /**
  * @desc Gets the dialog

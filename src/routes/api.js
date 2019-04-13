@@ -45,8 +45,18 @@ function getAccessToken(request, response) {
             'Content-Type': 'application/x-www-form-urlencoded',
         }
     }).then((result) => {
-        repos.tokenRepo.add(JSON.stringify(result.data));
-        response.json(result.data).status(301);
+        if (result.data !== undefined) {
+            let {user_id, team_name, team_id} = result.data;
+            if(user_id !== undefined){
+                let domain = request.protocol + '://' + request.get('host');
+                repos.tokenRepo.add(user_id, team_id, team_name, JSON.stringify(result.data));
+                response.redirect(domain)
+            }else {
+                response.status(200).json({});
+            }
+
+        }
+
         deferred.resolve(result.data);
     }).catch(error => {
         console.log(error);
@@ -56,7 +66,7 @@ function getAccessToken(request, response) {
 }
 
 function getAuthorization(request, response) {
-    let scopeParam = "bot commands chat:write:bot users:read im:history";
+    let scopeParam = "bot commands chat:write:bot";
     let domain = request.protocol + '://' + request.get('host') + process.env.APP_API_BASE;
     let redirectUri = domain + "authorized";
     let params = `?client_id=${process.env.SLACK_CLIENT_ID}&scope=${scopeParam}&redirect_uri=${redirectUri}`;

@@ -12,7 +12,6 @@ class UserStandup {
             standup_previous TEXT NULL,
             date_posted TEXT NOT NULL,
             status INTEGER DEFAULT 0
-
         )
         `;
         return this.dao.run(sql)
@@ -63,11 +62,11 @@ class UserStandup {
     getByDatePosted(datePosted) {
         const statement = "SELECT * FROM user_standups WHERE date_posted = ? AND status = 0 ORDER BY team ASC";
         return this.dao.all(statement, [datePosted])
-    }  
+    }
     getUsersWhoSubmitedByDate(datePosted) {
         const statement = "SELECT DISTINCT username FROM user_standups WHERE date_posted = ?";
         return this.dao.all(statement, [datePosted])
-    }   
+    }
     getAllUserStandups() {
         const statement = "SELECT * FROM users_standups  WHERE team IS NOT NULL ORDER BY team";
         return this.dao.all(statement)

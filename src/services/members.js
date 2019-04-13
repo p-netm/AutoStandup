@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== "production") {
     }
 }
 
-const appBootstrap = require("../main");
+const appBootstrap = require("../services/repos");
 
 module.exports = {
     saveMember: saveMember,
