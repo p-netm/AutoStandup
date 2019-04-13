@@ -46,6 +46,13 @@ constants.dialog = {
             name: "standup_previous",
             optional: true,
             placeholder: "e.g - Deployed OpenMRS and OpenSRP servers"
+        },
+        {
+            label:"Blockers",
+            type:"textarea",
+            name:"blockers",
+            optional:true,
+            placeholder:"e.g - Could not login in to the BA servers"
         }
     ]
 };
@@ -89,11 +96,6 @@ constants.attachments = [
         fallback: "Modify standup /standup edit",
         pretext: "To update your standup",
         text: "`/standup edit`"
-    },
-    {
-        fallback: "Delete standup /standup remove",
-        pretext: "To delete your standup",
-        text: "`/standup remove`",
     },
     {
         fallback: "Display information standup /standup post",

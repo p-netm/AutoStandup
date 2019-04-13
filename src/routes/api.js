@@ -83,6 +83,7 @@ function openDialog(request, response) {
             standup_today: body.submission.standup_today,
             team: team,
             standup_previous: body.submission.standup_previous,
+            blockers: body.submission.blockers,
             date_posted: today
         };
 

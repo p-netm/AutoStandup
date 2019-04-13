@@ -31,7 +31,7 @@
     "kue-ui-express": "^1.1.1",
     "moment": "^2.24.0",
     "ontime": "0.0.6",
-    "postgres-migrations": "^3.0.1",
+    "postgres-migrations": "^3.0.2",
     "promise": "^7.1.1",
     "q": "^1.5.1",
     "slackbots": "^1.2.0",
