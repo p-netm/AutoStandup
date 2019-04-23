@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== "production") {
     }
 }
 
-const appBootstrap = require("../services/repos");
+const repos = require("../services/repos");
 
 module.exports = {
     saveMember: saveMember,
@@ -20,7 +20,7 @@ module.exports = {
  */
 function getMembers() {
     let deferred = Q.defer();
-    appBootstrap.memberRepository.getAllChannelMembers()
+    repos.memberRepository.getAllChannelMembers()
         .then(response => {
             deferred.resolve(response);
         })
@@ -37,13 +37,13 @@ function getMembers() {
 
 
 function saveMember(username) {
-    appBootstrap.memberRepository.addMember(username);
+    repos.memberRepository.addMember(username);
 }
 
 function flushMembers() {
-    appBootstrap.memberRepository.countMembers().then(membersCount => {
+    repos.memberRepository.countMembers().then(membersCount => {
         if (membersCount.value > 0) {
-            appBootstrap.memberRepository.flushMembers();
+            repos.memberRepository.flushMembers();
         }
     });
 }

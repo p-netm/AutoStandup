@@ -50,15 +50,18 @@ module.exports = {
     postIndividualStandupToChannel: postIndividualStandUpToChannel,
     refreshChannelMembers: refreshChannelMembers,
     openDialog: openDialog,
-    getDialog: getDialog
+    getDialog: getDialog,
+    updateStandUp: updateStandUp
 };
 
 async function getAccessToken(teamName) {
     let token = "";
     return await repos.tokenRepo.getTokenByTeam(teamName)
         .then(result => {
-            let {bot} = JSON.parse(result.value);
-            token = bot.bot_access_token;
+            if (result !== undefined) {
+                let {bot} = JSON.parse(result.value);
+                token = bot.bot_access_token;
+            }
             return Promise.resolve(token);
         });
 
@@ -145,6 +148,14 @@ function postMessageToUser(userId, message, attachments) {
  */
 function saveStandUp(standUpDetails) {
     repos.userStandupRepo.add(standUpDetails);
+}
+
+/**
+ * @desc Update the latest stand up
+ * @param standUpDetails
+ */
+function updateStandUp(standUpDetails) {
+    repos.userStandupRepo.update(standUpDetails);
 }
 
 

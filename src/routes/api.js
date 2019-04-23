@@ -87,6 +87,11 @@ function openDialog(request, response) {
             date_posted: today
         };
 
+        let standUpId;
+        if (body.state !== null && body.state !== undefined) {
+            standUpId = body.state;
+        }
+
         if (team === "None") {
             standUpDetails.status = 1;
             standUpService.postIndividualStandupToChannel(standUpDetails)
@@ -96,10 +101,20 @@ function openDialog(request, response) {
                 .catch((error) => {
                     response.status(400).send({"Error Occurred": error});
                 });
-            standUpService.saveStandUp(standUpDetails);
+            if (standUpId === "") {
+                standUpService.saveStandUp(standUpDetails);
+            } else {
+                standUpDetails.id = standUpId;
+                standUpService.updateStandUp(standUpDetails);
+            }
         } else {
             standUpDetails.status = 0;
-            standUpService.saveStandUp(standUpDetails);
+            if (standUpId === "") {
+                standUpService.saveStandUp(standUpDetails);
+            } else {
+                standUpDetails.id = standUpId;
+                standUpService.updateStandUp(standUpDetails);
+            }
             response.status(200).json({});
         }
 

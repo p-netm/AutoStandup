@@ -18,6 +18,7 @@ module.exports = {
     deleteUser: deleteUser,
     getLateSubmitters: getLateSubmitters,
     getHistory: getHistory,
+    getTodayPostedStandup: getTodayPostedStandup
 };
 
 /**
@@ -81,7 +82,7 @@ function getLateSubmitters() {
     getUsers().then(unsubscribedUsers => {
         let users = unsubscribedUsers.map(it => it.username);
         let earlySubmitter = [];
-        repos.userStandupRepo.getUsersWhoSubmitedByDate(today)
+        repos.userStandupRepo.getUsersWhoSubmittedByDate(today)
             .then(submitters => {
                 earlySubmitter = submitters.map(it => it.username);
                 return getStoredChannelMembers().then(members => {
@@ -116,6 +117,17 @@ function getHistory(username, daysToSubtract) {
         .catch(error => {
             deferred.reject(error);
         });
+
+    return deferred.promise;
+}
+function getTodayPostedStandup(username) {
+    let deferred = Q.defer();
+    let today = moment().format("YYYY-MM-DD");
+    repos.userStandupRepo.getByUserAndDate(username, today).then((success) => {
+        deferred.resolve(success);
+    }).catch((error) => {
+        deferred.reject(error);
+    });
 
     return deferred.promise;
 }

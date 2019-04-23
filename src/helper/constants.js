@@ -11,11 +11,10 @@ constants.reminderResponse = ["Hey, submit your daily standup, posting time is `
     "Hi, your standup please am posting at `2.30PM`.",
     "Hey, in the next `2hrs` at 2.30PM team standup will be posted. Submit yours today. ",
     "Greetings!, please submit your daily standup. Time for posting is `2.30PM`"];
-constants.dialog = {
-    title: "Submit standup update",
+constants.standup_update_dialog = {
+    title: "Update your standup",
     callback_id: "submit-standup",
     submit_label: "Submit",
-    state: moment().format("YYYY-MM-DD"),
     elements: [
         {
             label: "Post as",
@@ -48,11 +47,55 @@ constants.dialog = {
             placeholder: "e.g - Deployed OpenMRS and OpenSRP servers"
         },
         {
-            label:"Blockers",
-            type:"textarea",
-            name:"blockers",
-            optional:true,
-            placeholder:"e.g - Could not login in to the BA servers"
+            label: "Blockers",
+            type: "textarea",
+            name: "blockers",
+            optional: true,
+            placeholder: "e.g - Could not login in to the BA servers"
+        }
+    ]
+};
+constants.dialog = {
+    title: "Submit daily standup",
+    callback_id: "submit-standup",
+    submit_label: "Submit",
+    elements: [
+        {
+            label: "Post as",
+            type: "select",
+            name: "team",
+            placeholder: "Select team or post yours alone",
+            options: [
+                {label: "My own", value: "None"},
+                {label: "OpenSRP", value: "Open SRP"},
+                {label: "Canopy", value: "Canopy"},
+                {label: "Kaznet", value: "Kaznet"},
+                {label: "Zebra", value: "Zebra"},
+                {label: "Ona Data", value: "Ona Data"},
+                {label: "Gisida", value: "Gisida"},
+                {label: "Other", value: "Other"}
+            ]
+        },
+        {
+            label: "Today's update",
+            type: "textarea",
+            name: "standup_today",
+            optional: false,
+            placeholder: "e.g - Add unit tests to Kaznet's playbook"
+        },
+        {
+            label: "Previously/Yesterday",
+            type: "textarea",
+            name: "standup_previous",
+            optional: true,
+            placeholder: "e.g - Deployed OpenMRS and OpenSRP servers"
+        },
+        {
+            label: "Blockers",
+            type: "textarea",
+            name: "blockers",
+            optional: true,
+            placeholder: "e.g - Could not login in to the BA servers"
         }
     ]
 };
@@ -62,6 +105,7 @@ constants.monthlyHistory = "month-history";
 constants.unsubscribe = "unsubscribe";
 constants.subscribe = "subscribe";
 constants.post = "post";
+constants.edit = "edit";
 constants.help = "help";
 constants.message = "message";
 constants.attachments = [
