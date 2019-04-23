@@ -20,6 +20,7 @@ service.deleteUser = deleteUser;
 service.getLateSubmitters = getLateSubmitters;
 service.getChannelMembers = getStoredChannelMembers;
 service.getHistory = getHistory;
+service.getTodayPostedStandup = getTodayPostedStandup;
 module.exports = service;
 
 /**
@@ -83,7 +84,7 @@ function getLateSubmitters() {
     getUsers().then(unsubscribedUsers => {
         let users = unsubscribedUsers.map(it => it.username);
         let earlySubmitter = [];
-        appBootstrap.userStandupRepo.getUsersWhoSubmitedByDate(today)
+        appBootstrap.userStandupRepo.getUsersWhoSubmittedByDate(today)
             .then(submitters => {
                 earlySubmitter = submitters.map(it => it.username);
                 return getStoredChannelMembers().then(members => {
@@ -110,7 +111,6 @@ function getHistory(username, daysToSubtract) {
     let momentStartDate = moment().subtract(daysToSubtract, 'days').calendar();
     let startDate = moment(momentStartDate, "L").format("YYYY-MM-DD");
     today = moment().format("YYYY-MM-DD");
-    console.log("Fetching history between " + startDate + " and " + today);
     appBootstrap.userStandupRepo.getHistory(username, startDate, today)
         .then((success) => {
             deferred.resolve(success);
@@ -118,6 +118,18 @@ function getHistory(username, daysToSubtract) {
         .catch(error => {
             deferred.reject(error);
         });
+
+    return deferred.promise;
+}
+
+function getTodayPostedStandup(username) {
+    let deferred = Q.defer();
+    let today = moment().format("YYYY-MM-DD");
+    appBootstrap.userStandupRepo.getByUserAndDate(username, today).then((success) => {
+        deferred.resolve(success);
+    }).catch((error) => {
+        deferred.reject(error);
+    });
 
     return deferred.promise;
 }
