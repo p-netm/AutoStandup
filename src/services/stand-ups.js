@@ -20,8 +20,13 @@ let rtmDeferred = Q.defer();
 const {RTMClient, WebClient, ErrorCode} = require("@slack/client");
 
 getAccessToken(process.env.WORKSPACE).then(token => {
-    rtm = new RTMClient(token);
-    web = new WebClient(token);
+    if (token === "") {
+        rtm = new RTMClient(process.env.SLACK_ACCESS_TOKEN);
+        web = new WebClient(process.env.SLACK_ACCESS_TOKEN);
+    } else {
+        rtm = new RTMClient(token);
+        web = new WebClient(token);
+    }
     startRtm();
 });
 
@@ -406,7 +411,12 @@ function refreshChannelMembers() {
         }
         console.log("channel members " + resp.members);
         resp.members.map(it => {
-            membersService.saveMember(it)
+            membersService.saveMember(it);
+            usersService.checkUser(it).then((user) => {
+                if (user === undefined) {
+                    usersService.saveUser(it);
+                }
+            });
         });
         deferred.resolve(resp.members);
     }).catch(error => {
