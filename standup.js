@@ -10,9 +10,11 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const appBootstrap = require("./src/main");
-const onTimeService = require("./src/services/on-time");
 const debug = require("debug")("onaautostandup:index");
 const api = require('./src/routes/api');
+const kue = require("kue");
+const kueUiExpress = require('kue-ui-express');
+
 const app = express();
 
 const rawBodyBuffer = (req, res, buf, encoding) => {
@@ -40,8 +42,17 @@ app.get('/', (req, res) => {
 });
 
 appBootstrap.main();
-onTimeService.runSchedules();
 
 app.listen(process.env.APP_API_PORT || 8008, function () {
     console.log("[+] app listening for requests")
 });
+
+/**
+ * Configure and mount kue express dashboard {@link https://github.com/stonecircle/kue-ui-express }
+ */
+
+kueUiExpress(app, '/kue/', '/kue-api');
+
+app.use('/kue-api/', kue.app);
+
+kue.app.listen(8007);

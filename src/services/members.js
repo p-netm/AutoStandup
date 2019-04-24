@@ -8,19 +8,19 @@ if (process.env.NODE_ENV !== "production") {
     }
 }
 
-const appBootstrap = require("../main");
-let service = {};
-service.getMembers = getMembers;
-service.saveMember = saveMember;
-service.flushMembers = flushMembers;
-module.exports = service;
+const repos = require("../services/repos");
+
+module.exports = {
+    saveMember: saveMember,
+    flushMembers: flushMembers
+};
 
 /**
  * get all users who unsubscribed
  */
 function getMembers() {
     let deferred = Q.defer();
-    appBootstrap.memberRepository.getAllChannelMembers()
+    repos.memberRepository.getAllChannelMembers()
         .then(response => {
             deferred.resolve(response);
         })
@@ -37,13 +37,13 @@ function getMembers() {
 
 
 function saveMember(username) {
-    appBootstrap.memberRepository.addMember(username);
+    repos.memberRepository.addMember(username);
 }
 
 function flushMembers() {
-    appBootstrap.memberRepository.countMembers().then(membersCount => {
-        if(membersCount.value > 0){
-            appBootstrap.memberRepository.flushMembers();
+    repos.memberRepository.countMembers().then(membersCount => {
+        if (membersCount.value > 0) {
+            repos.memberRepository.flushMembers();
         }
     });
 }

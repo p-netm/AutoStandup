@@ -8,27 +8,25 @@ if (process.env.NODE_ENV !== "production") {
     }
 }
 
-const appBootstrap = require("../main");
+const repos = require("../services/repos");
 const moment = require("moment");
 let today = moment().format("YYYY-MM-DD");
 
-let service = {};
-service.getUsers = getUsers;
-service.checkUser = checkUser;
-service.saveUser = saveUser;
-service.deleteUser = deleteUser;
-service.getLateSubmitters = getLateSubmitters;
-service.getChannelMembers = getStoredChannelMembers;
-service.getHistory = getHistory;
-service.getTodayPostedStandup = getTodayPostedStandup;
-module.exports = service;
+module.exports = {
+    checkUser: checkUser,
+    saveUser: saveUser,
+    deleteUser: deleteUser,
+    getLateSubmitters: getLateSubmitters,
+    getHistory: getHistory,
+    getTodayPostedStandup: getTodayPostedStandup
+};
 
 /**
  * get all users who unsubscribed
  */
 function getUsers() {
     let deferred = Q.defer();
-    appBootstrap.userRepo.getAllUsers()
+    repos.userRepo.getAllUsers()
         .then(response => {
             deferred.resolve(response);
         })
@@ -41,7 +39,7 @@ function getUsers() {
 
 function checkUser(username) {
     let deferred = Q.defer();
-    appBootstrap.userRepo.getByUsername(username)
+    repos.userRepo.getByUsername(username)
         .then(success => {
             deferred.resolve(success);
         })
@@ -53,11 +51,11 @@ function checkUser(username) {
 }
 
 function saveUser(username) {
-    appBootstrap.userRepo.add(username);
+    repos.userRepo.add(username);
 }
 
 function deleteUser(username) {
-    appBootstrap.userRepo.deleteByUsername(username);
+    repos.userRepo.deleteByUsername(username);
 }
 
 /**
@@ -65,7 +63,7 @@ function deleteUser(username) {
  */
 function getStoredChannelMembers() {
     let deferred = Q.defer();
-    appBootstrap.memberRepository.getAllChannelMembers().then(success => {
+    repos.memberRepository.getAllChannelMembers().then(success => {
         deferred.resolve(success.map(it => it.username));
     }).catch(error => {
         deferred.reject(error);
@@ -84,7 +82,7 @@ function getLateSubmitters() {
     getUsers().then(unsubscribedUsers => {
         let users = unsubscribedUsers.map(it => it.username);
         let earlySubmitter = [];
-        appBootstrap.userStandupRepo.getUsersWhoSubmittedByDate(today)
+        repos.userStandupRepo.getUsersWhoSubmittedByDate(today)
             .then(submitters => {
                 earlySubmitter = submitters.map(it => it.username);
                 return getStoredChannelMembers().then(members => {
@@ -111,7 +109,8 @@ function getHistory(username, daysToSubtract) {
     let momentStartDate = moment().subtract(daysToSubtract, 'days').calendar();
     let startDate = moment(momentStartDate, "L").format("YYYY-MM-DD");
     today = moment().format("YYYY-MM-DD");
-    appBootstrap.userStandupRepo.getHistory(username, startDate, today)
+    console.log("Fetching history between " + startDate + " and " + today);
+    repos.userStandupRepo.getHistory(username, startDate, today)
         .then((success) => {
             deferred.resolve(success);
         })
@@ -121,11 +120,10 @@ function getHistory(username, daysToSubtract) {
 
     return deferred.promise;
 }
-
 function getTodayPostedStandup(username) {
     let deferred = Q.defer();
     let today = moment().format("YYYY-MM-DD");
-    appBootstrap.userStandupRepo.getByUserAndDate(username, today).then((success) => {
+    repos.userStandupRepo.getByUserAndDate(username, today).then((success) => {
         deferred.resolve(success);
     }).catch((error) => {
         deferred.reject(error);

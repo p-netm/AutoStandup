@@ -107,6 +107,7 @@ constants.subscribe = "subscribe";
 constants.post = "post";
 constants.edit = "edit";
 constants.help = "help";
+constants.message = "message";
 constants.attachments = [
     {
         fallback: "Post standup /standup post",
@@ -153,3 +154,4 @@ constants.attachments = [
 
 ];
 constants.requestReceived = "Request received!";
+constants.slackAuthUrl = "https://slack.com/api/oauth.access";

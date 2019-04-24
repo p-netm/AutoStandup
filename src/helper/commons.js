@@ -1,10 +1,10 @@
 const constants = require("../helper/constants");
 
-let commons = {};
-commons.pickRandomPromptMsg = pickRandomPromptMsg;
-commons.pickRandomReminderMsg = pickRandomReminderMsg;
-commons.pickRandomResponse = pickRandomResponse;
-module.exports = commons;
+module.exports = {
+    pickRandomPromptMsg: pickRandomPromptMsg,
+    pickRandomReminderMsg: pickRandomReminderMsg,
+    pickRandomResponse: pickRandomResponse
+};
 
 function pickRandomPromptMsg() {
     let pos = Math.floor(Math.random() * (constants.promptResponse.length));

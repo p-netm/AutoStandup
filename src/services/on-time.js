@@ -1,9 +1,9 @@
 const onTime = require("ontime");
 const standUpService = require("../services/stand-ups");
 
-let service = {};
-service.runSchedules = runSchedules;
-module.exports = service;
+module.exports = {
+    runSchedules: runSchedules
+};
 
 function runSchedules() {
     scheduleIndividualPrompt();
@@ -22,6 +22,7 @@ function scheduleIndividualPrompt() {
 
     });
 }
+
 /**
  * Notify individuals before posting standup
  */
@@ -35,6 +36,7 @@ function scheduleNotifier() {
 
     });
 }
+
 /**
  * Post team standups
  */

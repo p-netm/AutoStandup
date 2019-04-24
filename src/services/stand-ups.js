@@ -7,18 +7,28 @@ if (process.env.NODE_ENV !== "production") {
         throw result.error;
     }
 }
-const appBootstrap = require("../main");
+const repos = require("../services/repos");
 const commons = require("../helper/commons");
 const usersService = require("../services/users");
 const membersService = require("../services/members");
 const moment = require("moment");
 
-const token = process.env.SLACK_ACCESS_TOKEN;
+let rtm = null;
+let web = null;
+let rtmDeferred = Q.defer();
 
 const {RTMClient, WebClient, ErrorCode} = require("@slack/client");
-const rtm = new RTMClient(token);
-const web = new WebClient(token);
-let rtmDeferred = Q.defer();
+
+getAccessToken(process.env.WORKSPACE).then(token => {
+    if (token === "") {
+        rtm = new RTMClient(process.env.SLACK_ACCESS_TOKEN);
+        web = new WebClient(process.env.SLACK_ACCESS_TOKEN);
+    } else {
+        rtm = new RTMClient(token);
+        web = new WebClient(token);
+    }
+    startRtm();
+});
 
 function startRtm() {
     rtm.start().then(success => {
@@ -33,25 +43,34 @@ function startRtm() {
     });
 }
 
-startRtm();
-
 let today = moment().format("YYYY-MM-DD");
 
-let service = {};
-service.sendMessageToUser = sendMessageToUser;
-service.postMessageToUser = postMessageToUser;
-service.saveStandUp = saveStandUp;
-service.promptIndividualStandup = promptIndividualStandup;
-service.notifyBeforePostingStandup = notifyBeforePostingStandup;
-service.postTeamStandupsToChannel = postTeamStandUpsToChannel;
-service.postIndividualStandupToChannel = postIndividualStandUpToChannel;
-service.refreshChannelMembers = refreshChannelMembers;
-service.respondToMessages = respondToMessages;
-service.openDialog = openDialog;
-service.getDialog = getDialog;
-service.startRtm = startRtm;
-service.updateStandUp = updateStandUp;
-module.exports = service;
+module.exports = {
+    sendMessageToUser: sendMessageToUser,
+    postMessageToUser: postMessageToUser,
+    saveStandUp: saveStandUp,
+    promptIndividualStandup: promptIndividualStandup,
+    notifyBeforePostingStandup: notifyBeforePostingStandup,
+    postTeamStandupsToChannel: postTeamStandUpsToChannel,
+    postIndividualStandupToChannel: postIndividualStandUpToChannel,
+    refreshChannelMembers: refreshChannelMembers,
+    openDialog: openDialog,
+    getDialog: getDialog,
+    updateStandUp: updateStandUp
+};
+
+async function getAccessToken(teamName) {
+    let token = "";
+    return await repos.tokenRepo.getTokenByTeam(teamName)
+        .then(result => {
+            if (result !== undefined) {
+                let {bot} = JSON.parse(result.value);
+                token = bot.bot_access_token;
+            }
+            return Promise.resolve(token);
+        });
+
+}
 
 /**
  * @desc Gets the dialog
@@ -133,7 +152,7 @@ function postMessageToUser(userId, message, attachments) {
  * Saves stand-ups to db
  */
 function saveStandUp(standUpDetails) {
-    appBootstrap.userStandupRepo.add(standUpDetails);
+    repos.userStandupRepo.add(standUpDetails);
 }
 
 /**
@@ -141,7 +160,7 @@ function saveStandUp(standUpDetails) {
  * @param standUpDetails
  */
 function updateStandUp(standUpDetails) {
-    appBootstrap.userStandupRepo.update(standUpDetails);
+    repos.userStandupRepo.update(standUpDetails);
 }
 
 
@@ -263,7 +282,7 @@ function postTeamStandUpsToChannel() {
     today = moment().format("YYYY-MM-DD");
     let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
     let standupUpdate = `*📅 Showing Ona Standup Updates On ${todayFormatted}*\n\n`;
-    appBootstrap.userStandupRepo.getByDatePosted(today)
+    repos.userStandupRepo.getByDatePosted(today)
         .then(data => {
             let attachments = [];
             data.forEach((item, index) => {
@@ -344,7 +363,9 @@ function postIndividualStandUpToChannel(item) {
 /**
  * Interact with users v
  */
-function respondToMessages() {
+function respondToMessages(message) {
+    console.log("New message: " + JSON.stringify(message));
+
 }
 
 /***
@@ -390,7 +411,12 @@ function refreshChannelMembers() {
         }
         console.log("channel members " + resp.members);
         resp.members.map(it => {
-            membersService.saveMember(it)
+            membersService.saveMember(it);
+            usersService.checkUser(it).then((user) => {
+                if (user === undefined) {
+                    usersService.saveUser(it);
+                }
+            });
         });
         deferred.resolve(resp.members);
     }).catch(error => {

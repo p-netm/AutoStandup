@@ -1,9 +1,9 @@
 const crypto = require('crypto');
 const timingSafeCompare = require('tsscmp');
 
-let guard = {};
-guard.isVerified = isVerified;
-module.exports = guard;
+module.exports = {
+    isVerified: isVerified
+};
 
 function isVerified(request) {
     const signature = request.headers['x-slack-signature'];
