@@ -400,26 +400,39 @@ function refreshChannelMembers() {
     membersService.flushMembers();
     let deferred = Q.defer();
     const resp = {};
-    web.channels.list().then(success => {
-        const channel = success.channels.find(c => c.is_member);
-        if (channel) {
-            resp.ok = true;
-            resp.members = channel.members;
-        } else {
-            resp.ok = false;
-            resp.members = [];
-        }
-        console.log("channel members " + resp.members);
-        resp.members.map(it => {
-            membersService.saveMember(it);
-            usersService.checkUser(it).then((user) => {
-                if (user === undefined) {
-                    usersService.saveUser(it);
+    web.users.list().then(success => {
+            const usersList = success;
+            if (usersList !== undefined) {
+                resp.ok = true;
+                resp.members = usersList.members;
+            } else {
+                resp.ok = false;
+                resp.members = [];
+            }
+
+            let persons = resp.members.map(person => ({user_id: person.id, profile: person.profile}));
+
+            //Only save users who are not bots So we filter the array to only contain non bot users
+            let reduced = persons.reduce(function (filtered, person) {
+                if (person.profile.bot_id === undefined && person.user_id !== "USLACKBOT") {
+                    let someNewValue = {user_id: person.user_id, profile: person.profile};
+                    filtered.push(someNewValue);
                 }
+                return filtered;
+            }, []);
+
+            reduced.map(newPerson => {
+                membersService.saveMember(newPerson);
+                usersService.checkUser(newPerson.user_id).then((user) => {
+                    if (user === undefined) {
+                        usersService.saveUser(newPerson.user_id);
+                    }
+                });
+
             });
-        });
-        deferred.resolve(resp.members);
-    }).catch(error => {
+            deferred.resolve(persons);
+        }
+    ).catch(error => {
         if (error.code === ErrorCode.PlatformError) {
             console.log(error.message);
             console.log(error.data);

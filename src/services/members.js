@@ -36,8 +36,8 @@ function getMembers() {
 }
 
 
-function saveMember(username) {
-    repos.memberRepository.addMember(username);
+function saveMember(person) {
+    repos.memberRepository.addMember(person);
 }
 
 function flushMembers() {
