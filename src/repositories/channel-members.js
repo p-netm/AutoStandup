@@ -35,6 +35,11 @@ class MemberRepository {
         return this.dao.all(statement)
     }
 
+    getMemberProfile(userId) {
+        const statement = "SELECT  profile FROM channel_members WHERE user_id = ?";
+        return this.dao.get(statement, [userId])
+    }
+
 }
 
 module.exports = MemberRepository;

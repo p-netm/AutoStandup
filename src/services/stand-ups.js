@@ -281,7 +281,7 @@ function formatTeamsMessageAttachment(item, index, data) {
 function postTeamStandUpsToChannel() {
     today = moment().format("YYYY-MM-DD");
     let todayFormatted = moment(today, "YYYY-MM-DD").format("MMM Do YYYY");
-    let standupUpdate = `*📅 Showing Ona Standup Updates On ${todayFormatted}*\n\n`;
+    let standupUpdate = `*📅 Showing Ona Team Standup Updates On ${todayFormatted}*\n\n`;
     repos.userStandupRepo.getByDatePosted(today)
         .then(data => {
             let attachments = [];
@@ -295,7 +295,7 @@ function postTeamStandUpsToChannel() {
             if (allAttachments.length > 0) {
                 postMessageToChannel(standupUpdate, allAttachments);
             } else {
-                standupUpdate = `*📅 Nothing to show. No standup updates for ${todayFormatted}*`;
+                standupUpdate = `*📅 Nothing to show. No team standup updates for ${todayFormatted}*`;
                 postMessageToChannel(standupUpdate, [])
             }
         });
@@ -307,41 +307,48 @@ function postTeamStandUpsToChannel() {
  * @returns {{color: string, footer: string, title: string, fields: {short: boolean, title: string, value: string}[], fallback: string}}
  */
 function formatSingleMessageAttachment(item) {
-    let attachment = {
-        color: "#FFA300",
-        title: `<@${item.username}>`,
-        fallback:
-            "Sorry Could not display standups in this type of device. Check in desktop browser",
-        fields: [
-            {
-                title: "Today",
-                value: `${item.standup_today}`,
+    //Get user profile then use the information in the attachment
+    return membersService.getUserProfile(item.username).then(d => {
+        let profile = JSON.parse(d.profile);
+        let profileName = profile.display_name !== undefined && profile.display_name !== "" ? profile.display_name : profile.real_name;
+        let attachment = {
+            author_name: profileName,
+            color: "#4BBEDF",
+            fallback:
+                "Sorry Could not display standups in this type of device. Check in desktop browser",
+            fields: [
+                {
+                    title: "Today",
+                    value: `${item.standup_today}`,
+                    short: false
+                }
+            ],
+            thumb_url: profile.image_512, //Gets profile thumbnail from profile
+            footer: `Posted as individual`
+        };
+        if (item.standup_previous !== null) {
+            const previously = {
+                title: "Yesterday/Previously",
+                value: `${
+                    item.standup_previous == null
+                        ? "Not specified"
+                        : item.standup_previous
+                    }`,
                 short: false
-            }
-        ],
-        footer: `Posted as individual`
-    };
-    if (item.standup_previous !== null) {
-        const previously = {
-            title: "Yesterday/Previously",
-            value: `${
-                item.standup_previous == null
-                    ? "Not specified"
-                    : item.standup_previous
-                }`,
-            short: false
-        };
-        attachment.fields.push(previously);
-    }
-    if (item.blockers != null) {
-        const blockers = {
-            title: "Blockers",
-            value: `${item.blockers == null ? "Not specified" : item.blockers}`,
-            short: false
-        };
-        attachment.fields.push(blockers);
-    }
-    return attachment;
+            };
+            attachment.fields.push(previously);
+        }
+        if (item.blockers != null) {
+            const blockers = {
+                title: "Blockers",
+                value: `${item.blockers === null ? "Not specified" : item.blockers}`,
+                short: false
+            };
+            attachment.fields.push(blockers);
+        }
+        return Promise.resolve(attachment)
+    });
+
 }
 
 /**
@@ -351,12 +358,13 @@ function formatSingleMessageAttachment(item) {
  */
 function postIndividualStandUpToChannel(item) {
     let deferred = Q.defer();
-    let todayFormatted = moment(item.date_posted, "YYYY-MM-DD").format("MMM Do YYYY");
-    let standupUpdate = `🔔*New standup update posted ${todayFormatted}*\n\n`;
-    let attachment = formatSingleMessageAttachment(item);
-    let attachments = [];
-    attachments.push(attachment);
-    postMessageToChannel(standupUpdate, attachments);
+    let standupUpdate = `*🔔New standup update from <@${item.username}>*\n\n`;
+    formatSingleMessageAttachment(item).then(result => {
+        let attachments = [];
+        attachments.push(result);
+        postMessageToChannel(standupUpdate, attachments);
+    });
+
     return deferred.promise;
 }
 
