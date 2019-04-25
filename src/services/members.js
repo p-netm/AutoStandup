@@ -12,15 +12,16 @@ const repos = require("../services/repos");
 
 module.exports = {
     saveMember: saveMember,
-    flushMembers: flushMembers
+    flushMembers: flushMembers,
+    getUserProfile: getUserProfile
 };
 
 /**
  * get all users who unsubscribed
  */
-function getMembers() {
+function getUserProfile(userId) {
     let deferred = Q.defer();
-    repos.memberRepository.getAllChannelMembers()
+    repos.memberRepository.getMemberProfile(userId)
         .then(response => {
             deferred.resolve(response);
         })
@@ -36,8 +37,8 @@ function getMembers() {
 }
 
 
-function saveMember(username) {
-    repos.memberRepository.addMember(username);
+function saveMember(person) {
+    repos.memberRepository.addMember(person);
 }
 
 function flushMembers() {

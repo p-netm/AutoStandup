@@ -7,26 +7,16 @@ class MemberRepository {
         const sql = `
         CREATE TABLE IF NOT EXISTS channel_members (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL
+            user_id TEXT NOT NULL,
+            profile TEXT NOT NULL
         )
         `;
         return this.dao.run(sql)
     }
 
-    addMember(username) {
-        const insertStatement = "INSERT INTO channel_members (username) VALUES (?)";
-        this.dao.run(insertStatement, [username])
-    }
-
-    updateMember(person) {
-        const {id, username} = person;
-        const updateStatement = "UPDATE channel_members SET username = ? WHERE id = ?";
-        return this.dao.run(updateStatement, [username, id])
-    }
-
-    deleteMember(id) {
-        const deleteStatement = "DELETE FROM channel_members WHERE id = ?";
-        return this.dao.run(deleteStatement, [id])
+    addMember(person) {
+        const insertStatement = "INSERT INTO channel_members (user_id, profile) VALUES (?,?)";
+        this.dao.run(insertStatement, [person.user_id, JSON.stringify(person.profile)])
     }
 
     countMembers() {
@@ -40,24 +30,14 @@ class MemberRepository {
         return this.dao.run(deleteStatement).then(() => this.dao.run(seqStatement));
     }
 
-    deleteMemberByUsername(username) {
-        const deleteByUsernameStatement = "DELETE FROM channel_members WHERE username = ?";
-        return this.dao.get(deleteByUsernameStatement, [username])
-    }
-
-    getMemberById(id) {
-        const statement = "SELECT * FROM channel_members WHERE id = ?";
-        return this.dao.get(statement, [id])
-    }
-
-    getMemberByUsername(username) {
-        const statement = "SELECT * FROM channel_members WHERE username = ?";
-        return this.dao.get(statement, [username])
-    }
-
     getAllChannelMembers() {
         const statement = "SELECT  * FROM channel_members";
         return this.dao.all(statement)
+    }
+
+    getMemberProfile(userId) {
+        const statement = "SELECT  profile FROM channel_members WHERE user_id = ?";
+        return this.dao.get(statement, [userId])
     }
 
 }

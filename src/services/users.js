@@ -64,7 +64,7 @@ function deleteUser(username) {
 function getStoredChannelMembers() {
     let deferred = Q.defer();
     repos.memberRepository.getAllChannelMembers().then(success => {
-        deferred.resolve(success.map(it => it.username));
+        deferred.resolve(success.map(it => it.user_id));
     }).catch(error => {
         deferred.reject(error);
     });
