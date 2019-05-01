@@ -140,7 +140,8 @@ function getDialog(request, response) {
 }
 
 function getChannelMembers(request, response) {
-    standUpService.refreshChannelMembers().then(success => {
+    let isFirstTime = request.query.firstTime !== undefined ? request.query.firstTime : true;
+    standUpService.refreshChannelMembers(isFirstTime).then(success => {
         response.status(200).json({"Success channel members retrieved": success});
     }).catch(error => {
         response.status(400).send({"Error Occurred": constants.invalidToken + error});

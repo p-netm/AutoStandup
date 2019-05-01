@@ -27,9 +27,20 @@ function scheduleIndividualPrompt() {
  * Notify individuals before posting standup
  */
 function scheduleNotifier() {
+    //first notification for late submitters at 1230hrs
     onTime({
         log: true,
         cycle: ['weekday 12:30:00'],
+    }, function (ot) {
+        standUpService.notifyBeforePostingStandup();
+        ot.done();
+
+    });
+
+    //second notification for later submitters at 1430hrs
+    onTime({
+        log: true,
+        cycle: ['weekday 14:30:00'],
     }, function (ot) {
         standUpService.notifyBeforePostingStandup();
         ot.done();
@@ -43,7 +54,7 @@ function scheduleNotifier() {
 function schedulePostingTeamStandup() {
     onTime({
         log: true,
-        cycle: ['weekday 14:30:00'],
+        cycle: ['weekday 17:00:00'],
     }, function (ot) {
         standUpService.postTeamStandupsToChannel();
         ot.done();
@@ -60,7 +71,7 @@ function scheduleRefreshChannelMembers() {
         log: true,
         cycle: ['1T12:00:00'],
     }, function (ot) {
-        standUpService.refreshChannelMembers();
+        standUpService.refreshChannelMembers(true);
         ot.done();
 
     });

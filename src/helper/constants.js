@@ -6,11 +6,12 @@ constants.promptResponse = ["Hey, submit your daily standup. Use `/standup post`
     "Hi, another day to submit your standup. Use `/standup post` command to submit standup; for help  `/standup help`",
     "Hey, time for standup update. Use `/standup post` command to submit standup; for help  `/standup help`",
     "Greetings!, please submit your daily standup. Use `/standup post` command to submit standup; for help  `/standup help`"];
-constants.reminderResponse = ["Hey, submit your daily standup, posting time is `2.30PM`. Don't be left out!",
-    "Hi, time runs so fast. Submit your standup before `2.30PM`.",
-    "Hi, your standup please am posting at `2.30PM`.",
-    "Hey, in the next `2hrs` at 2.30PM team standup will be posted. Submit yours today. ",
-    "Greetings!, please submit your daily standup. Time for posting is `2.30PM`"];
+constants.reminderResponse = ["Hey, submit your daily standup, posting time is `5.00PM`. Don't be left out!",
+    "Hi, time runs so fast. Submit your standup before `5.00PM`.",
+    "Hi, your standup please am posting at `5.00PM`.",
+    "Hey, at exactly 5.00PM team standup will be posted. Submit yours today. ",
+    "Am posting team standups to the channel at exactly 5.00PM. Submit before time. ",
+    "Greetings!, please submit your daily standup. Time for posting is `5.00PM`"];
 constants.standup_update_dialog = {
     title: "Update your standup",
     callback_id: "submit-standup",
@@ -23,12 +24,13 @@ constants.standup_update_dialog = {
             placeholder: "Select team or post yours alone",
             options: [
                 {label: "My own", value: "None"},
-                {label: "OpenSRP", value: "Open SRP"},
-                {label: "Canopy", value: "Canopy"},
-                {label: "Kaznet", value: "Kaznet"},
-                {label: "Zebra", value: "Zebra"},
                 {label: "Ona Data", value: "Ona Data"},
+                {label: "OpenSRP", value: "OpenSRP"},
+                {label: "Canopy", value: "Canopy"},
                 {label: "Gisida", value: "Gisida"},
+                {label: "Zebra", value: "Zebra"},
+                {label: "GRP", value: "GRP"},
+                {label: "Kaznet", value: "Kaznet"},
                 {label: "Other", value: "Other"}
             ]
         },
