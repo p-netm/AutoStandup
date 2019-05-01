@@ -404,7 +404,7 @@ function openDialog(triggerId, dialog) {
  * Flush channel members table
  * Find channel that the bot belongs to, get the members and save to local db
  */
-function refreshChannelMembers() {
+function refreshChannelMembers(isFirstTime) {
     membersService.flushMembers();
     let deferred = Q.defer();
     const resp = {};
@@ -431,12 +431,13 @@ function refreshChannelMembers() {
 
             reduced.map(newPerson => {
                 membersService.saveMember(newPerson);
-                usersService.checkUser(newPerson.user_id).then((user) => {
-                    if (user === undefined) {
-                        usersService.saveUser(newPerson.user_id);
-                    }
-                });
-
+                if (isFirstTime === true) {
+                    usersService.checkUser(newPerson.user_id).then((user) => {
+                        if (user === undefined) {
+                            usersService.saveUser(newPerson.user_id);
+                        }
+                    });
+                }
             });
             deferred.resolve(persons);
         }
