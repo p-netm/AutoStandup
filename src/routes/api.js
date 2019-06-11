@@ -20,6 +20,14 @@ router.post('/events', actOnMessageEvents);
 router.get('/dialog', getDialog);
 router.get('/members', getChannelMembers);
 router.get('/oauth', getAuthorization);
+router.get('/standups', getStandups);
+
+function getStandups(request, response) {
+    repos.userStandupRepo.getAllDetails().then(data => {
+        return response.status(200).json(data);
+    });
+}
+
 
 if (!process.env.SLACK_REDIRECT_URL && !process.env.SLACK_CLIENT_ID) {
     console.log('Error: Client ID and Slack REDIRECT URLS missing in the environment variables');
@@ -47,11 +55,11 @@ function getAccessToken(request, response) {
     }).then((result) => {
         if (result.data !== undefined) {
             let {user_id, team_name, team_id} = result.data;
-            if(user_id !== undefined){
+            if (user_id !== undefined) {
                 let domain = request.protocol + '://' + request.get('host');
                 repos.tokenRepo.add(user_id, team_id, team_name, JSON.stringify(result.data));
                 response.redirect(domain)
-            }else {
+            } else {
                 response.status(200).json({});
             }
 

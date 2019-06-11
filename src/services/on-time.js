@@ -71,7 +71,7 @@ function scheduleRefreshChannelMembers() {
         log: true,
         cycle: ['1T12:00:00'],
     }, function (ot) {
-        standUpService.refreshChannelMembers(true);
+        standUpService.refreshChannelMembers(false);
         ot.done();
 
     });
